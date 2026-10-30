@@ -1,0 +1,11 @@
+/*
+ * Entry stylesheet. The layer order below is the whole cascade strategy:
+ * later layers win, regardless of selector specificity. Component styles
+ * (in .astro files) wrap themselves in `@layer components`.
+ */
+@layer reset, tokens, base, components, utilities;
+
+@import './reset.css' layer(reset);
+@import './tokens.css' layer(tokens);
+@import './base.css' layer(base);
+@import './utilities.css' layer(utilities);

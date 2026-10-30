@@ -1,0 +1,144 @@
+---
+import PageLayout from '../../../layouts/PageLayout.astro';
+import Icon from '../../../components/ui/Icon.astro';
+import Spot from '../../../components/ui/illustrations/Spot.astro';
+import { localeParams, routes, useI18n, type Locale } from '../../../i18n';
+import { getServices } from '../../../lib/content';
+
+export const getStaticPaths = () => localeParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const { t, path } = useI18n(locale);
+const services = await getServices(locale);
+---
+
+<PageLayout
+  title={t.meta.services.title}
+  description={t.meta.services.description}
+  label={t.nav.services}
+  heading={t.services.title}
+  lead={t.services.lead}
+  crumbs={[{ name: t.nav.services, href: path(routes.services) }]}
+>
+  <Spot slot="aside" name="restore" size={160} />
+  <section class="section" aria-label={t.nav.services}>
+    <div class="container">
+      <ol role="list" class="svc-index">
+        {services.map((service, i) => (
+          <li class="svc-index__item" data-reveal>
+            <span class="svc-index__num" aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <span class="svc-index__icon">
+              <Icon name={service.icon} size={26} />
+            </span>
+            <div class="svc-index__text">
+              <h2>
+                <a href={path(routes.service(service.slug))}>{service.entry.data.title}</a>
+              </h2>
+              <p>{service.entry.data.summary}</p>
+            </div>
+            <Icon name="arrow" size={22} class="svc-index__arrow" />
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  @layer components {
+    .svc-index {
+      display: grid;
+      gap: var(--space-s);
+      margin: 0;
+    }
+
+    @media (width >= 64rem) {
+      .svc-index {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .svc-index__item {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: var(--space-s) var(--space-m);
+      align-items: start;
+      padding: var(--space-l) var(--space-m);
+      border: var(--rule);
+      border-radius: var(--radius-l);
+      background: var(--color-surface);
+      transition:
+        border-color var(--duration-s),
+        box-shadow var(--duration-s);
+    }
+
+    .svc-index__item:hover {
+      border-color: var(--color-accent);
+      box-shadow: var(--shadow-m);
+    }
+
+    .svc-index__item:focus-within {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 2px;
+    }
+
+    .svc-index__num {
+      position: absolute;
+      inset-block-start: var(--space-s);
+      inset-inline-end: var(--space-m);
+      font-family: var(--font-mono);
+      font-size: var(--step--1);
+      color: var(--color-muted);
+    }
+
+    .svc-index__icon {
+      display: grid;
+      place-items: center;
+      inline-size: 3.25rem;
+      block-size: 3.25rem;
+      border-radius: var(--radius-m);
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+    }
+
+    .svc-index__text {
+      display: grid;
+      gap: var(--space-2xs);
+    }
+
+    .svc-index__text h2 {
+      font-size: var(--step-3);
+    }
+
+    .svc-index__text a {
+      text-decoration: none;
+    }
+
+    .svc-index__text a::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+    }
+
+    .svc-index__text a:focus-visible {
+      outline: none;
+    }
+
+    .svc-index__text p {
+      color: var(--color-muted);
+    }
+
+    .svc-index__item :global(.svc-index__arrow) {
+      align-self: end;
+      color: var(--color-muted);
+    }
+
+    .svc-index__item:hover :global(.svc-index__arrow) {
+      color: var(--color-accent);
+    }
+  }
+</style>

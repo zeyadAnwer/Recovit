@@ -1,0 +1,49 @@
+---
+/**
+ * WhatsAppButton — floating shortcut to a WhatsApp chat. Rendered only when
+ * `features.whatsappButton` is on and `whatsapp` holds a real number.
+ */
+import Icon from '../ui/Icon.astro';
+import { site } from '../../config';
+import { useI18n } from '../../i18n';
+import { whatsappHref } from '../../lib/contact';
+
+const { t } = useI18n(Astro.currentLocale);
+const href = site.features.whatsappButton ? whatsappHref(site.whatsapp) : undefined;
+---
+
+{href && (
+  <a
+    href={href}
+    class="whatsapp-button"
+    rel="noopener"
+    target="_blank"
+    aria-label={`${t.a11y.whatsapp} ${t.a11y.newTab}`}
+  >
+    <Icon name="whatsapp" size={26} />
+  </a>
+)}
+
+<style>
+  @layer components {
+    .whatsapp-button {
+      position: fixed;
+      inset-block-end: var(--space-m);
+      inset-inline-end: var(--space-m);
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      inline-size: 3.25rem;
+      block-size: 3.25rem;
+      border-radius: 50%;
+      background: var(--color-secondary);
+      color: var(--color-bg);
+      box-shadow: 0 4px 14px rgb(0 0 0 / 18%);
+      transition: scale var(--duration-s) var(--ease-out);
+    }
+
+    .whatsapp-button:hover {
+      scale: 1.06;
+    }
+  }
+</style>

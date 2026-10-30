@@ -1,0 +1,169 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import Icon from '../../components/ui/Icon.astro';
+import Spot from '../../components/ui/illustrations/Spot.astro';
+import type { SpotName } from '../../components/ui/illustrations/spots';
+import { localeParams, routes, useI18n, type Locale } from '../../i18n';
+
+export const getStaticPaths = () => localeParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const { t, path } = useI18n(locale);
+const p = t.process;
+const spots: SpotName[] = ['isolate', 'timeline', 'restore', 'harden'];
+---
+
+<PageLayout
+  title={t.meta.process.title}
+  description={t.meta.process.description}
+  label={t.nav.process}
+  heading={p.title}
+  lead={p.lead}
+  crumbs={[{ name: t.nav.process, href: path(routes.process) }]}
+>
+  <Spot slot="aside" name="timeline" size={168} />
+  <section class="section" aria-label={t.nav.process}>
+    <div class="container container--wide">
+      <ol role="list" class="stages">
+        {p.steps.map((step, i) => (
+          <li class="stage" data-reveal>
+            <div class="stage__head">
+              <span class="stage__num" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <h2>{step.title}</h2>
+              <Spot name={spots[i] ?? 'restore'} size={88} class="stage__spot" />
+            </div>
+            <div class="stage__body">
+              <h3 data-structural>{p.whatWeDo}</h3>
+              <p>{step.detail}</p>
+            </div>
+            <div class="stage__outcome">
+              <h3 data-structural>{p.outcome}</h3>
+              <p>
+                <Icon name="check" size={20} />
+                <span>{step.outcome}</span>
+              </p>
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <aside class="price" aria-labelledby="price-title">
+        <Icon name="handshake" size={28} />
+        <div>
+          <h2 id="price-title">{p.priceTitle}</h2>
+          <p>{p.priceBody}</p>
+        </div>
+      </aside>
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  @layer components {
+    .stages {
+      display: grid;
+      margin: 0;
+      border-block-start: var(--rule-strong);
+    }
+
+    .stage {
+      display: grid;
+      gap: var(--space-m) var(--space-xl);
+      padding-block: var(--space-xl);
+      border-block-end: var(--rule);
+    }
+
+    @media (width >= 60rem) {
+      .stage {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr);
+        align-items: start;
+      }
+    }
+
+    .stage__head {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--space-2xs) var(--space-s);
+      align-items: center;
+    }
+
+    .stage__num {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: var(--step-2);
+      color: var(--color-accent);
+    }
+
+    .stage__head h2 {
+      font-size: var(--step-4);
+    }
+
+    .stage__head :global(.stage__spot) {
+      grid-column: 1 / -1;
+      margin-block-start: var(--space-xs);
+    }
+
+    .stage h3 {
+      margin-block-end: var(--space-2xs);
+      font-family: var(--font-body);
+      font-size: var(--step--1);
+      font-weight: 650;
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+      color: var(--color-muted);
+    }
+
+    :global(:lang(ar)) .stage h3 {
+      text-transform: none;
+    }
+
+    .stage__body p {
+      font-size: var(--step-1);
+    }
+
+    .stage__outcome {
+      padding: var(--space-m);
+      border-radius: var(--radius-l);
+      background: var(--color-accent-soft);
+    }
+
+    .stage__outcome p {
+      display: flex;
+      gap: var(--space-2xs);
+      align-items: flex-start;
+      font-weight: 600;
+    }
+
+    .stage__outcome :global(svg) {
+      flex-shrink: 0;
+      margin-block-start: 0.2em;
+      color: var(--color-accent);
+    }
+
+    .price {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--space-m);
+      margin-block-start: var(--space-xl);
+      padding: var(--space-l);
+      border: var(--rule);
+      border-radius: var(--radius-l);
+      background: var(--color-surface);
+    }
+
+    .price :global(svg) {
+      color: var(--color-accent);
+    }
+
+    .price h2 {
+      font-size: var(--step-2);
+      margin-block-end: var(--space-2xs);
+    }
+
+    .price p {
+      color: var(--color-muted);
+    }
+  }
+</style>

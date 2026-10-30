@@ -1,0 +1,271 @@
+---
+/**
+ * MobileNav — full-height navigation panel below 68rem. Built on the native
+ * `popover` attribute (opens, closes on Esc, restores focus — no JS). Large
+ * 56px rows, services in a disclosure, language/theme in one row, and the
+ * contact actions pinned to the bottom.
+ *
+ * @prop services  Joined services from `getServices(locale)`.
+ */
+import Icon from '../ui/Icon.astro';
+import Logo from '../ui/Logo.astro';
+import LanguageSwitch from './LanguageSwitch.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import { isCurrent, primaryNav } from './nav';
+import { site } from '../../config';
+import { routes, useI18n } from '../../i18n';
+import { formatPhone, mailHref, telHref, whatsappHref } from '../../lib/contact';
+import type { getServices } from '../../lib/content';
+
+interface Props {
+  services: Awaited<ReturnType<typeof getServices>>;
+}
+
+const { services } = Astro.props;
+const { t, path } = useI18n(Astro.currentLocale);
+const pathname = Astro.url.pathname;
+const emergency = telHref(site.phones.emergency);
+const whatsapp = whatsappHref(site.whatsapp);
+const others = primaryNav.filter((item) => item.key !== 'services');
+---
+
+<button
+  type="button"
+  class="mobile-nav__open"
+  popovertarget="mobile-nav"
+  popovertargetaction="show"
+  aria-label={t.a11y.openMenu}
+>
+  <Icon name="menu" />
+</button>
+
+<div id="mobile-nav" class="mobile-nav" popover>
+  <div class="mobile-nav__top">
+    <Logo />
+    <button
+      type="button"
+      class="mobile-nav__close"
+      popovertarget="mobile-nav"
+      popovertargetaction="hide"
+      aria-label={t.a11y.closeMenu}
+    >
+      <Icon name="close" />
+    </button>
+  </div>
+
+  <nav aria-label={t.a11y.mainNav} class="mobile-nav__body">
+    <ul role="list" class="mobile-nav__list">
+      <li>
+        <details class="mobile-nav__group" open={isCurrent(pathname, routes.services)}>
+          <summary>
+            {t.nav.services}
+            <Icon name="plus" size={20} class="mobile-nav__plus" />
+          </summary>
+          <ul role="list" class="mobile-nav__sub">
+            {services.map((service) => (
+              <li>
+                <a href={path(routes.service(service.slug))}>
+                  <Icon name={service.icon} size={20} />
+                  {service.entry.data.title}
+                </a>
+              </li>
+            ))}
+            <li>
+              <a href={path(routes.services)} class="mobile-nav__all">
+                {t.nav.allServices}
+              </a>
+            </li>
+          </ul>
+        </details>
+      </li>
+      {others.map((item) => (
+        <li>
+          <a href={path(item.href)} aria-current={isCurrent(pathname, item.href) ? 'page' : undefined}>
+            {t.nav[item.key]}
+          </a>
+        </li>
+      ))}
+    </ul>
+    <div class="mobile-nav__switches">
+      <LanguageSwitch />
+      <ThemeToggle />
+    </div>
+  </nav>
+
+  <div class="mobile-nav__actions">
+    <a href={emergency ?? path(routes.startCase)} class="mobile-nav__action mobile-nav__action--alert">
+      <Icon name="call" size={20} />
+      {emergency ? <bdi>{formatPhone(site.phones.emergency)}</bdi> : t.cta.startCase}
+    </a>
+    <div class="mobile-nav__row">
+      {whatsapp && (
+        <a href={whatsapp} class="mobile-nav__action" rel="noopener" target="_blank">
+          <Icon name="whatsapp" size={20} />
+          {t.cta.whatsapp}
+        </a>
+      )}
+      <a href={mailHref(site.emails.info)} class="mobile-nav__action">
+        <Icon name="mail" size={20} />
+        {t.common.email}
+      </a>
+      {emergency && (
+        <a href={path(routes.startCase)} class="mobile-nav__action">
+          <Icon name="fileCheck" size={20} />
+          {t.cta.startCase}
+        </a>
+      )}
+    </div>
+  </div>
+</div>
+
+<style>
+  @layer components {
+    .mobile-nav__open,
+    .mobile-nav__close {
+      display: inline-grid;
+      place-items: center;
+      inline-size: var(--target);
+      block-size: var(--target);
+      border: var(--rule);
+      border-radius: var(--radius-pill);
+      background: var(--color-surface);
+    }
+
+    @media (width >= 68rem) {
+      .mobile-nav__open {
+        display: none;
+      }
+    }
+
+    .mobile-nav {
+      position: fixed;
+      inset: 0;
+      inline-size: 100%;
+      max-inline-size: none;
+      block-size: 100dvh;
+      max-block-size: none;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: var(--color-bg);
+      color: var(--color-text);
+    }
+
+    .mobile-nav:popover-open {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mobile-nav__top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-xs) var(--gutter);
+      border-block-end: var(--rule);
+    }
+
+    .mobile-nav__body {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-xs) var(--gutter);
+    }
+
+    .mobile-nav__list {
+      margin: 0;
+    }
+
+    .mobile-nav__list > li {
+      border-block-end: var(--rule);
+    }
+
+    .mobile-nav__list > li > a,
+    .mobile-nav__group summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-block-size: 3.5rem;
+      font-family: var(--font-heading);
+      font-size: var(--step-2);
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .mobile-nav__group summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .mobile-nav__list > li > a[aria-current='page'] {
+      color: var(--color-accent);
+    }
+
+    .mobile-nav__group[open] :global(.mobile-nav__plus) {
+      rotate: 45deg;
+    }
+
+    .mobile-nav__sub {
+      display: grid;
+      padding-block-end: var(--space-s);
+    }
+
+    .mobile-nav__sub a {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      min-block-size: var(--target);
+      color: var(--color-muted);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .mobile-nav__sub :global(svg) {
+      color: var(--color-accent);
+    }
+
+    .mobile-nav__sub .mobile-nav__all {
+      color: var(--color-secondary);
+      font-weight: 600;
+    }
+
+    .mobile-nav__switches {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-block: var(--space-s);
+    }
+
+    .mobile-nav__actions {
+      display: grid;
+      gap: var(--space-2xs);
+      padding: var(--space-s) var(--gutter) max(var(--space-s), env(safe-area-inset-bottom));
+      border-block-start: var(--rule);
+      background: var(--color-surface);
+    }
+
+    .mobile-nav__row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+      gap: var(--space-2xs);
+    }
+
+    .mobile-nav__action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2xs);
+      min-block-size: 3rem;
+      padding-inline: var(--space-s);
+      border: var(--rule-strong);
+      border-radius: var(--radius-pill);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .mobile-nav__action--alert {
+      border-color: transparent;
+      background: var(--color-alert);
+      color: var(--color-on-alert);
+    }
+  }
+</style>

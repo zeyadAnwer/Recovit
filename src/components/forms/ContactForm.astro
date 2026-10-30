@@ -1,0 +1,127 @@
+---
+/**
+ * ContactForm — general enquiries. Posts to the `sendMessage` action; the
+ * receipt page handles visitors without JavaScript.
+ */
+import { actions } from 'astro:actions';
+import Button from '../ui/Button.astro';
+import Field from '../ui/Field.astro';
+import FormShell from './FormShell.astro';
+import Receipt from './Receipt.astro';
+import { routes, useI18n } from '../../i18n';
+import { LIMITS, PHONE_PATTERN } from '../../lib/validation/fields';
+
+const { t, path } = useI18n(Astro.currentLocale);
+const c = t.contactPage;
+const id = 'contact';
+---
+
+<FormShell id={id} kind="message" action={path(routes.contactSent) + actions.sendMessage}>
+  <div class="contact-form__pair">
+    <Field
+      formId={id}
+      name="name"
+      label={c.fields.name}
+      required
+      autocomplete="name"
+      maxlength={LIMITS.name}
+    />
+    <Field
+      formId={id}
+      name="email"
+      type="email"
+      label={c.fields.email}
+      required
+      ltr
+      autocomplete="email"
+      inputmode="email"
+      maxlength={LIMITS.email}
+    />
+    <Field
+      formId={id}
+      name="phone"
+      type="tel"
+      label={c.fields.phone}
+      optionalText={t.common.optional}
+      ltr
+      autocomplete="tel"
+      inputmode="tel"
+      pattern={PHONE_PATTERN}
+      maxlength={LIMITS.phone}
+    />
+    <Field formId={id} name="subject" label={c.fields.subject} required maxlength={LIMITS.subject} />
+  </div>
+  <Field
+    formId={id}
+    name="message"
+    label={c.fields.message}
+    multiline
+    rows={6}
+    required
+    maxlength={LIMITS.message}
+  />
+  <div class="contact-form__consent" data-field-wrapper="consent">
+    <input
+      type="checkbox"
+      id="contact-consent"
+      name="consent"
+      required
+      data-field="consent"
+      aria-describedby="contact-consent-error"
+    />
+    <label for="contact-consent">
+      {c.fields.consent} <a href={path(routes.privacy)}>{t.footer.privacy}</a>
+    </label>
+    <p id="contact-consent-error" class="contact-form__error" data-error-for="consent" aria-live="polite"></p>
+  </div>
+  <div>
+    <Button type="submit" data-submit data-sending-label={t.caseForm.sending} arrow>
+      {c.submit}
+    </Button>
+  </div>
+  <Receipt slot="receipt" kind="message" />
+</FormShell>
+
+<script>
+  import '../../scripts/contact-form';
+</script>
+
+<style>
+  @layer components {
+    .contact-form__pair {
+      display: grid;
+      gap: var(--space-m);
+    }
+
+    @container (min-width: 34rem) {
+      .contact-form__pair {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .contact-form__consent {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--space-2xs) var(--space-xs);
+      align-items: start;
+    }
+
+    .contact-form__consent input {
+      inline-size: 1.4rem;
+      block-size: 1.4rem;
+      margin-block-start: 0.25em;
+      accent-color: var(--color-secondary);
+    }
+
+    .contact-form__error {
+      grid-column: 2;
+      color: var(--color-danger);
+      font-size: var(--step--1);
+      font-weight: 500;
+    }
+
+    .contact-form__error:empty {
+      display: none;
+    }
+  }
+</style>

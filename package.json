@@ -1,0 +1,85 @@
+{
+  "name": "recovik-webapp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Official website of Recovik — Data Recovery Experts",
+  "packageManager": "pnpm@12.16.1",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "start": "node ./dist/server/entry.mjs",
+    "check": "astro check",
+    "lint": "eslint . && stylelint \"src/**/*.{css,astro}\" && prettier --check .",
+    "lint:fix": "eslint . --fix && stylelint \"src/**/*.{css,astro}\" --fix && prettier --write .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "lhci": "lhci autorun",
+    "verify": "pnpm lint && pnpm check && pnpm test && pnpm build && pnpm test:e2e",
+    "prepare": "simple-git-hooks",
+    "assets": "node scripts/generate-assets.mjs",
+    "launch:check": "node scripts/launch-check.mjs",
+    "content:audit": "node scripts/content-audit.mjs",
+    "screenshots": "node scripts/screenshots.mjs"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm exec lint-staged",
+    "commit-msg": "node ./scripts/check-commit-msg.mjs \"$1\""
+  },
+  "lint-staged": {
+    "*.{ts,mjs,astro}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.css": [
+      "stylelint --fix",
+      "prettier --write"
+    ],
+    "*.{md,mdx,json,yml,yaml}": [
+      "prettier --write"
+    ],
+    "*.astro": [
+      "stylelint --fix"
+    ]
+  },
+  "dependencies": {
+    "@astrojs/node": "11.1.9",
+    "@astrojs/sitemap": "3.7.4",
+    "@fontsource-variable/alexandria": "5.3.0",
+    "@fontsource-variable/bricolage-grotesque": "5.3.0",
+    "@fontsource-variable/jetbrains-mono": "5.3.0",
+    "@fontsource-variable/public-sans": "5.3.0",
+    "@fontsource/ibm-plex-sans-arabic": "5.3.0",
+    "astro": "7.4.3",
+    "nodemailer": "10.2.1",
+    "sharp": "0.35.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.12",
+    "@axe-core/playwright": "4.14.0",
+    "@eslint/js": "10.0.1",
+    "@lhci/cli": "0.15.1",
+    "@playwright/test": "1.64.1",
+    "@types/node": "24.19.2",
+    "@types/nodemailer": "8.0.2",
+    "eslint": "10.13.0",
+    "eslint-plugin-astro": "3.2.1",
+    "globals": "17.13.0",
+    "lint-staged": "17.6.0",
+    "postcss-html": "2.0.0",
+    "prettier": "3.9.10",
+    "prettier-plugin-astro": "1.1.2",
+    "simple-git-hooks": "2.14.0",
+    "stylelint": "17.16.0",
+    "stylelint-config-standard": "40.0.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.0.5"
+  }
+}

@@ -1,0 +1,42 @@
+[Unit]
+Description=Recovik website — Node server for form actions
+Documentation=https://github.com/AbdulkhaliqAlward/recovik-webapp/blob/main/docs/DEPLOYMENT.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=recovik
+Group=recovik
+WorkingDirectory=/srv/recovik/current
+EnvironmentFile=/etc/recovik/recovik.env
+Environment=NODE_ENV=production
+ExecStartPre=/usr/local/bin/node scripts/check-env.mjs
+ExecStart=/usr/local/bin/node dist/server/entry.mjs
+Restart=on-failure
+RestartSec=3
+
+# Hardening: the process only needs to read its files and talk to SMTP.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+SystemCallArchitectures=native
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

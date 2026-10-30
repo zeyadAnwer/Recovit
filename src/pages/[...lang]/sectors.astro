@@ -1,0 +1,156 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import Icon from '../../components/ui/Icon.astro';
+import { localeParams, routes, useI18n, type Locale } from '../../i18n';
+import { getSectors } from '../../lib/content';
+
+export const getStaticPaths = () => localeParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const { t, path } = useI18n(locale);
+const sectors = await getSectors(locale);
+---
+
+<PageLayout
+  title={t.meta.sectors.title}
+  description={t.meta.sectors.description}
+  label={t.nav.sectors}
+  heading={t.sectors.title}
+  lead={t.sectors.lead}
+  crumbs={[{ name: t.nav.sectors, href: path(routes.sectors) }]}
+>
+  <section class="section" aria-label={t.nav.sectors}>
+    <div class="container sector-grid">
+      {sectors.map((sector) => (
+        <article id={sector.slug} class="sector" aria-labelledby={`${sector.slug}-title`} data-reveal>
+          <header class="sector__head">
+            <span class="sector__icon">
+              <Icon name={sector.icon} size={26} />
+            </span>
+            <div>
+              <h2 id={`${sector.slug}-title`}>{sector.entry.data.title}</h2>
+              <p>{sector.entry.data.summary}</p>
+            </div>
+          </header>
+          <div class="sector__cols">
+            <div>
+              <h3 data-structural>{t.sectors.caresAbout}</h3>
+              <ul role="list">
+                {sector.entry.data.caresAbout.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 data-structural>{t.sectors.howWeWork}</h3>
+              <ul role="list" class="sector__how">
+                {sector.entry.data.howWeWork.map((item) => (
+                  <li>
+                    <Icon name="check" size={18} />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  @layer components {
+    .sector-grid {
+      display: grid;
+      gap: var(--space-m);
+    }
+
+    @media (width >= 64rem) {
+      .sector-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .sector {
+      display: grid;
+      gap: var(--space-m);
+      align-content: start;
+      padding: var(--space-l);
+      border: var(--rule);
+      border-radius: var(--radius-l);
+      background: var(--color-surface);
+      scroll-margin-block-start: calc(var(--header-height) + var(--space-m));
+    }
+
+    .sector:target {
+      border-color: var(--color-accent);
+      box-shadow: var(--shadow-m);
+    }
+
+    .sector__head {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--space-s);
+      align-items: start;
+    }
+
+    .sector__icon {
+      display: grid;
+      place-items: center;
+      inline-size: 3rem;
+      block-size: 3rem;
+      border-radius: var(--radius-m);
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+    }
+
+    .sector__head h2 {
+      font-size: var(--step-3);
+      margin-block-end: var(--space-3xs);
+    }
+
+    .sector__head p {
+      color: var(--color-muted);
+    }
+
+    .sector__cols {
+      display: grid;
+      gap: var(--space-m);
+      padding-block-start: var(--space-m);
+      border-block-start: var(--rule);
+    }
+
+    @media (width >= 40rem) {
+      .sector__cols {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .sector__cols h3 {
+      margin-block-end: var(--space-xs);
+      font-family: var(--font-body);
+      font-size: var(--step--1);
+      font-weight: 650;
+      color: var(--color-muted);
+    }
+
+    .sector__cols ul {
+      display: grid;
+      gap: var(--space-2xs);
+      margin: 0;
+    }
+
+    .sector__how li {
+      display: flex;
+      gap: var(--space-2xs);
+      align-items: flex-start;
+    }
+
+    .sector__how :global(svg) {
+      flex-shrink: 0;
+      margin-block-start: 0.25em;
+      color: var(--color-accent);
+    }
+  }
+</style>

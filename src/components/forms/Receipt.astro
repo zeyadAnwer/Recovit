@@ -1,0 +1,110 @@
+---
+/**
+ * Receipt — confirmation shown after a successful submission. Used inline by
+ * the enhancement script (ref filled in client-side) and by the server-rendered
+ * receipt pages for visitors without JavaScript.
+ *
+ * @prop kind     "case" or "message".
+ * @prop caseRef  Case reference, when known at render time (no-JS path).
+ */
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+import { routes, useI18n } from '../../i18n';
+
+interface Props {
+  kind: 'case' | 'message';
+  caseRef?: string | undefined;
+}
+
+const { kind, caseRef } = Astro.props;
+const { t, path } = useI18n(Astro.currentLocale);
+const r = t.receipt;
+---
+
+<div class="receipt">
+  <span class="receipt__icon">
+    <Icon name="check" size={28} />
+  </span>
+  <h2 class="receipt__title" data-receipt-title tabindex="-1">
+    {kind === 'case' ? r.caseTitle : r.messageTitle}
+  </h2>
+  {kind === 'case' ? (
+    <>
+      <p>{r.caseBody}</p>
+      <p class="receipt__ref">
+        <span class="receipt__ref-label">{r.caseRef}</span>
+        <bdi class="mono" data-case-ref>
+          {caseRef}
+        </bdi>
+      </p>
+      <p class="receipt__meanwhile">
+        <Icon name="alert" size={20} />
+        <span>{r.caseMeanwhile}</span>
+      </p>
+    </>
+  ) : (
+    <p>{r.messageBody}</p>
+  )}
+  <Button href={path(routes.home)} variant="quiet" arrow>
+    {t.cta.backHome}
+  </Button>
+</div>
+
+<style>
+  @layer components {
+    .receipt {
+      display: grid;
+      gap: var(--space-s);
+      justify-items: start;
+      padding: var(--space-l);
+      border: 1px solid var(--color-secondary);
+      border-inline-start-width: 6px;
+      background: var(--color-surface);
+    }
+
+    .receipt__icon {
+      display: grid;
+      place-items: center;
+      inline-size: 3rem;
+      block-size: 3rem;
+      border-radius: 50%;
+      background: var(--color-secondary);
+      color: var(--color-bg);
+    }
+
+    .receipt__title {
+      font-size: var(--step-3);
+    }
+
+    .receipt__title:focus {
+      outline: none;
+    }
+
+    .receipt__ref {
+      display: grid;
+      gap: var(--space-3xs);
+    }
+
+    .receipt__ref-label {
+      color: var(--color-muted);
+      font-size: var(--step--1);
+    }
+
+    .receipt__ref .mono {
+      font-size: var(--step-2);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .receipt__meanwhile {
+      display: flex;
+      gap: var(--space-2xs);
+      font-weight: 500;
+    }
+
+    .receipt__meanwhile :global(svg) {
+      color: var(--color-accent);
+      flex-shrink: 0;
+    }
+  }
+</style>

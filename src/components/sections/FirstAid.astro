@@ -1,0 +1,127 @@
+---
+/**
+ * FirstAid — incident first aid for the first hour: four numbered actions in
+ * an alert-edged panel. The single most useful thing for someone under attack.
+ */
+import Icon from '../ui/Icon.astro';
+import Label from '../ui/Label.astro';
+import { useI18n } from '../../i18n';
+import type { IconName } from '../ui/icons';
+
+const { t } = useI18n(Astro.currentLocale);
+const firstAid = t.home.firstAid;
+const icons: IconName[] = ['unplug', 'noEntry', 'alert', 'call'];
+---
+
+<section class="first-aid" aria-labelledby="first-aid-title">
+  <div class="container">
+    <div class="first-aid__panel">
+      <div class="first-aid__head">
+        <Label tone="alert">{firstAid.label}</Label>
+        <h2 id="first-aid-title">{firstAid.title}</h2>
+      </div>
+      <ol class="first-aid__steps" role="list">
+        {firstAid.steps.map((step, index) => (
+          <li>
+            <span class="first-aid__icon">
+              <Icon name={icons[index] ?? 'check'} size={22} />
+            </span>
+            <h3>
+              <span class="first-aid__num" aria-hidden="true">
+                {index + 1}
+              </span>
+              {step.title}
+            </h3>
+            <p>{step.body}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+</section>
+
+<style>
+  @layer components {
+    .first-aid {
+      padding-block: var(--space-l) var(--space-xl);
+    }
+
+    .first-aid__panel {
+      display: grid;
+      gap: var(--space-l);
+      padding: var(--space-l) var(--space-m);
+      border: 1px solid color-mix(in srgb, var(--color-alert) 35%, var(--color-line));
+      border-radius: var(--radius-l);
+      background: var(--color-alert-soft);
+    }
+
+    @media (width >= 72rem) {
+      .first-aid__panel {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+        align-items: start;
+        padding: var(--space-xl);
+        gap: var(--space-xl);
+      }
+    }
+
+    .first-aid__head {
+      display: grid;
+      gap: var(--space-xs);
+      justify-items: start;
+    }
+
+    .first-aid__head h2 {
+      font-size: var(--step-3);
+    }
+
+    .first-aid__steps {
+      display: grid;
+      gap: var(--space-m);
+      margin: 0;
+    }
+
+    @media (width >= 36rem) {
+      .first-aid__steps {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (width >= 56rem) {
+      .first-aid__steps {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .first-aid__steps li {
+      display: grid;
+      gap: var(--space-2xs);
+      align-content: start;
+    }
+
+    .first-aid__icon {
+      display: grid;
+      place-items: center;
+      inline-size: 2.75rem;
+      block-size: 2.75rem;
+      border-radius: var(--radius-m);
+      background: var(--color-surface);
+      color: var(--color-alert);
+      box-shadow: var(--shadow-s);
+    }
+
+    .first-aid__steps h3 {
+      display: flex;
+      gap: var(--space-2xs);
+      font-size: var(--step-1);
+    }
+
+    .first-aid__num {
+      color: var(--color-alert);
+    }
+
+    .first-aid__steps p {
+      color: var(--color-muted);
+      font-size: var(--step--1);
+    }
+  }
+</style>

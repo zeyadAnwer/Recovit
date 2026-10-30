@@ -1,0 +1,393 @@
+---
+/**
+ * CaseForm — the five-step incident report: systems → incident → urgency →
+ * contact details → review.
+ *
+ * Without JavaScript every step is visible and the form posts to the receipt
+ * page, which runs the `submitCase` action. With JavaScript
+ * (scripts/case-form.ts) one step shows at a time, each step is validated
+ * before moving on, the review step summarises the answers, and the action is
+ * called in place.
+ */
+import { actions } from 'astro:actions';
+import Button from '../ui/Button.astro';
+import ChoiceGroup from '../ui/ChoiceGroup.astro';
+import Field from '../ui/Field.astro';
+import FormShell from './FormShell.astro';
+import Receipt from './Receipt.astro';
+import { routes, useI18n } from '../../i18n';
+import {
+  CONTACT_METHODS,
+  SYSTEM_TYPES,
+  INCIDENT_TYPES,
+  LIMITS,
+  PHONE_PATTERN,
+  URGENCY_LEVELS,
+} from '../../lib/validation/fields';
+import type { IconName } from '../ui/icons';
+
+const { t, path } = useI18n(Astro.currentLocale);
+const f = t.caseForm;
+const id = 'case';
+
+const systemIcons: Record<(typeof SYSTEM_TYPES)[number], IconName> = {
+  files: 'fileCheck',
+  databases: 'database',
+  email: 'mailbox',
+  cloud: 'cloud',
+  virtual: 'server',
+  endpoints: 'layers',
+  other: 'search',
+};
+
+const steps = [
+  { key: 'systems', title: f.steps.systems },
+  { key: 'incident', title: f.steps.incident },
+  { key: 'urgency', title: f.steps.urgency },
+  { key: 'contact', title: f.steps.contact },
+  { key: 'review', title: f.steps.review },
+] as const;
+const total = steps.length;
+const stepHeading = (index: number) => `${f.progress(index + 1, total)} — ${steps[index]?.title}`;
+---
+
+<FormShell id={id} kind="case" action={path(routes.caseSent) + actions.submitCase}>
+  <ol class="case-progress" role="list" aria-label={f.label} data-progress-list>
+    {steps.map((step, index) => (
+      <li data-progress-item={index}>
+        <span class="case-progress__num mono" aria-hidden="true">
+          {String(index + 1).padStart(2, '0')}
+        </span>
+        <span class="case-progress__name">{step.title}</span>
+      </li>
+    ))}
+  </ol>
+
+  <section class="case-step" data-step="0" aria-labelledby="case-step-0">
+    <h2 id="case-step-0" class="case-step__title" tabindex="-1">
+      {stepHeading(0)}
+    </h2>
+    <ChoiceGroup
+      formId={id}
+      name="systemType"
+      legend={f.fields.systemType}
+      required
+      options={SYSTEM_TYPES.map((value) => ({ value, label: f.systems[value], icon: systemIcons[value] }))}
+    />
+    <Field
+      formId={id}
+      name="systemDetails"
+      label={f.fields.systemDetails}
+      hint={f.fields.systemDetailsHint}
+      optionalText={t.common.optional}
+      maxlength={LIMITS.systemDetails}
+    />
+  </section>
+
+  <section class="case-step" data-step="1" aria-labelledby="case-step-1">
+    <h2 id="case-step-1" class="case-step__title" tabindex="-1">
+      {stepHeading(1)}
+    </h2>
+    <ChoiceGroup
+      formId={id}
+      name="incident"
+      legend={f.fields.incident}
+      required
+      options={INCIDENT_TYPES.map((value) => ({ value, label: f.incidents[value] }))}
+    />
+    <Field
+      formId={id}
+      name="details"
+      label={f.fields.details}
+      hint={f.fields.detailsHint}
+      multiline
+      required
+      maxlength={LIMITS.details}
+    />
+  </section>
+
+  <section class="case-step" data-step="2" aria-labelledby="case-step-2">
+    <h2 id="case-step-2" class="case-step__title" tabindex="-1">
+      {stepHeading(2)}
+    </h2>
+    <ChoiceGroup
+      formId={id}
+      name="urgency"
+      legend={f.fields.urgency}
+      required
+      columns={1}
+      options={URGENCY_LEVELS.map((value) => ({
+        value,
+        label: f.urgencies[value],
+        hint: f.urgencyHints[value],
+      }))}
+    />
+  </section>
+
+  <section class="case-step" data-step="3" aria-labelledby="case-step-3">
+    <h2 id="case-step-3" class="case-step__title" tabindex="-1">
+      {stepHeading(3)}
+    </h2>
+    <div class="case-step__pair">
+      <Field
+        formId={id}
+        name="name"
+        label={f.fields.name}
+        required
+        autocomplete="name"
+        maxlength={LIMITS.name}
+      />
+      <Field
+        formId={id}
+        name="organization"
+        label={f.fields.organization}
+        optionalText={t.common.optional}
+        autocomplete="organization"
+        maxlength={LIMITS.organization}
+      />
+      <Field
+        formId={id}
+        name="phone"
+        type="tel"
+        label={f.fields.phone}
+        hint={f.fields.phoneHint}
+        required
+        ltr
+        autocomplete="tel"
+        inputmode="tel"
+        pattern={PHONE_PATTERN}
+        maxlength={LIMITS.phone}
+      />
+      <Field
+        formId={id}
+        name="email"
+        type="email"
+        label={f.fields.email}
+        required
+        ltr
+        autocomplete="email"
+        inputmode="email"
+        maxlength={LIMITS.email}
+      />
+    </div>
+    <ChoiceGroup
+      formId={id}
+      name="contactMethod"
+      legend={f.fields.contactMethod}
+      required
+      options={CONTACT_METHODS.map((value) => ({ value, label: f.contactMethods[value] }))}
+    />
+    <div class="case-consent" data-field-wrapper="consent">
+      <input
+        type="checkbox"
+        id="case-consent"
+        name="consent"
+        required
+        data-field="consent"
+        aria-describedby="case-consent-error"
+      />
+      <label for="case-consent">
+        {f.fields.consent} <a href={path(routes.privacy)}>{t.footer.privacy}</a>
+      </label>
+      <p id="case-consent-error" class="case-consent__error" data-error-for="consent" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section class="case-step" data-step="4" aria-labelledby="case-step-4">
+    <h2 id="case-step-4" class="case-step__title" tabindex="-1">
+      {stepHeading(4)}
+    </h2>
+    <p class="case-step__lead" data-review-lead hidden>
+      {f.reviewLead}
+    </p>
+    <p class="case-step__lead" data-noscript-note>
+      {f.noScriptNote}
+    </p>
+    <dl class="case-review" data-review data-empty={f.reviewEmpty} hidden></dl>
+  </section>
+
+  <div class="case-nav">
+    <Button
+      variant="secondary"
+      data-step-back
+      data-edit-label={f.edit}
+      hidden
+      icon="chevron"
+      class="case-nav__back"
+    >
+      {f.back}
+    </Button>
+    <Button data-step-next hidden arrow>
+      {f.next}
+    </Button>
+    <Button type="submit" data-submit data-sending-label={f.sending} arrow>
+      {f.submit}
+    </Button>
+  </div>
+
+  <Receipt slot="receipt" kind="case" />
+</FormShell>
+
+<style>
+  @layer components {
+    .case-progress {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--space-3xs);
+      margin: 0;
+    }
+
+    .case-progress li {
+      display: grid;
+      gap: var(--space-3xs);
+      padding-block-start: var(--space-2xs);
+      border-block-start: 3px solid var(--color-line);
+      font-size: var(--step--1);
+      color: var(--color-muted);
+    }
+
+    .case-progress li[data-state='done'] {
+      border-block-start-color: var(--color-secondary);
+    }
+
+    .case-progress li[aria-current='step'] {
+      border-block-start-color: var(--color-accent);
+      color: var(--color-text);
+      font-weight: 600;
+    }
+
+    @media (width <= 40rem) {
+      .case-progress__name {
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+      }
+
+      .case-progress li[aria-current='step'] .case-progress__name {
+        position: static;
+        inline-size: auto;
+        block-size: auto;
+        clip-path: none;
+        white-space: nowrap;
+      }
+    }
+
+    .case-step {
+      display: grid;
+      gap: var(--space-l);
+      padding-block-start: var(--space-l);
+      border-block-start: var(--rule);
+    }
+
+    .js-steps .case-step {
+      border-block-start: 0;
+      padding-block-start: 0;
+    }
+
+    .case-step__title {
+      font-size: var(--step-2);
+    }
+
+    .case-step__title:focus {
+      outline: none;
+    }
+
+    .case-step__pair {
+      display: grid;
+      gap: var(--space-m);
+    }
+
+    @container (min-width: 34rem) {
+      .case-step__pair {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .case-step__lead {
+      color: var(--color-muted);
+    }
+
+    .case-consent {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--space-2xs) var(--space-xs);
+      align-items: start;
+    }
+
+    .case-consent input {
+      inline-size: 1.4rem;
+      block-size: 1.4rem;
+      margin-block-start: 0.25em;
+      accent-color: var(--color-secondary);
+    }
+
+    .case-consent__error {
+      grid-column: 2;
+      color: var(--color-danger);
+      font-size: var(--step--1);
+      font-weight: 500;
+    }
+
+    .case-consent__error:empty {
+      display: none;
+    }
+
+    .case-review {
+      display: grid;
+      border-block-start: var(--rule-strong);
+    }
+
+    .case-review :global(div) {
+      display: grid;
+      gap: var(--space-3xs) var(--space-m);
+      padding-block: var(--space-xs);
+      border-block-end: var(--rule);
+    }
+
+    @container (min-width: 34rem) {
+      .case-review :global(div) {
+        grid-template-columns: 12rem 1fr auto;
+        align-items: baseline;
+      }
+    }
+
+    .case-review :global(dt) {
+      color: var(--color-muted);
+      font-size: var(--step--1);
+    }
+
+    .case-review :global(dd) {
+      white-space: pre-line;
+      overflow-wrap: anywhere;
+    }
+
+    .case-review :global(button) {
+      justify-self: start;
+      min-block-size: var(--target);
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--color-secondary);
+      text-decoration: underline;
+      font-size: var(--step--1);
+    }
+
+    .case-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      padding-block-start: var(--space-m);
+      border-block-start: var(--rule);
+    }
+
+    .case-nav :global(.case-nav__back svg) {
+      transform: scaleX(-1);
+    }
+
+    :global([dir='rtl']) .case-nav :global(.case-nav__back svg) {
+      transform: none;
+    }
+  }
+</style>

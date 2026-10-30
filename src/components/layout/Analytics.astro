@@ -1,0 +1,18 @@
+---
+/**
+ * Analytics — privacy-friendly, cookie-less analytics, off by default.
+ * Enabled from `site.config.ts → features.analytics`; astro.config.ts opens
+ * the CSP for the chosen provider's origin only.
+ */
+import { site } from '../../config';
+
+const analytics = site.features.analytics;
+const cloudflareBeacon = JSON.stringify({ token: analytics.cloudflareToken });
+---
+
+{analytics.enabled && analytics.provider === 'plausible' && (
+  <script defer data-domain={analytics.plausibleDomain} src="https://plausible.io/js/script.js" />
+)}
+{analytics.enabled && analytics.provider === 'cloudflare' && (
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon={cloudflareBeacon} />
+)}

@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Recovik logo concepts</title>
+    <style>
+      :root {
+        --paper: #f4f6f5;
+        --ink: #0c1b26;
+        --muted: #4a5865;
+        --accent: #0a7258;
+        --line: #dce2e5;
+        --dark: #08121a;
+        --dark-ink: #e6edf1;
+        --dark-accent: #3cc9a0;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: clamp(16px, 4vw, 48px);
+        background: var(--paper);
+        color: var(--ink);
+        font:
+          16px/1.6 system-ui,
+          'Segoe UI',
+          sans-serif;
+      }
+      h1 {
+        font-size: 2rem;
+        margin: 0 0 0.25rem;
+      }
+      p.intro {
+        color: var(--muted);
+        margin: 0 0 2rem;
+        max-width: 70ch;
+      }
+      .concepts {
+        display: grid;
+        gap: 24px;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+      }
+      article {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 24px;
+        display: grid;
+        gap: 16px;
+      }
+      article.chosen {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px #0a725822;
+      }
+      .badge {
+        justify-self: start;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 2px 10px;
+        border-radius: 999px;
+        background: #e3f1ec;
+        color: var(--accent);
+      }
+      .badge.alt {
+        background: #eef1f3;
+        color: var(--muted);
+      }
+      h2 {
+        margin: 0;
+        font-size: 1.25rem;
+      }
+      .row {
+        display: flex;
+        align-items: end;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .tile {
+        display: grid;
+        place-items: center;
+        border-radius: 10px;
+        padding: 12px;
+        background: var(--paper);
+      }
+      .tile.dark {
+        background: var(--dark);
+      }
+      .tile svg {
+        display: block;
+      }
+      .rationale {
+        color: var(--muted);
+        margin: 0;
+      }
+      figcaption {
+        font-size: 0.75rem;
+        color: var(--muted);
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Recovik — logo concepts</h1>
+    <p class="intro">
+      Three directions for “data brought back after an incident”. Each is shown at 128, 32 and 16 px, on light
+      and dark. Concept A is implemented across the site, favicons and OG images; B and C are kept for review.
+    </p>
+
+    <div class="concepts">
+      <article class="chosen">
+        <span class="badge">Implemented</span>
+        <h2>A — Restore R</h2>
+        <p class="rationale">
+          The bowl of the R is a rewind arc whose arrowhead closes around a recovered data block: the letter,
+          the action and the outcome in one shape.
+        </p>
+        <div class="row">
+          <figure class="tile">
+            <svg viewBox="0 0 32 32" width="128" height="128">
+              <g
+                fill="none"
+                stroke="#0C1B26"
+                stroke-width="3.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M8.5 27V5.5h8a7 7 0 0 1 0 14h-2.5" />
+                <path d="M16.4 16.8l-2.6 2.7 2.6 2.7" />
+                <path d="M19.2 19.9l5.3 7.1" />
+              </g>
+              <rect x="14.2" y="10.2" width="4.6" height="4.6" rx="1" fill="#0A7258" />
+            </svg>
+            <figcaption>128</figcaption>
+          </figure>
+          <figure class="tile">
+            <svg viewBox="0 0 32 32" width="32" height="32">
+              <g
+                fill="none"
+                stroke="#0C1B26"
+                stroke-width="3.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M8.5 27V5.5h8a7 7 0 0 1 0 14h-2.5" />
+                <path d="M16.4 16.8l-2.6 2.7 2.6 2.7" />
+                <path d="M19.2 19.9l5.3 7.1" />
+              </g>
+              <rect x="14.2" y="10.2" width="4.6" height="4.6" rx="1" fill="#0A7258" />
+            </svg>
+            <figcaption>32</figcaption>
+          </figure>
+          <figure class="tile">
+            <svg viewBox="0 0 32 32" width="16" height="16">
+              <g
+                fill="none"
+                stroke="#0C1B26"
+                stroke-width="3.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M8.5 27V5.5h8a7 7 0 0 1 0 14h-2.5" />
+                <path d="M16.4 16.8l-2.6 2.7 2.6 2.7" />
+                <path d="M19.2 19.9l5.3 7.1" />
+              </g>
+              <rect x="14.2" y="10.2" width="4.6" height="4.6" rx="1" fill="#0A7258" />
+            </svg>
+            <figcaption>16</figcaption>
+          </figure>
+          <figure class="tile dark">
+            <svg viewBox="0 0 32 32" width="64" height="64">
+              <g
+                fill="none"
+                stroke="#E6EDF1"
+                stroke-width="3.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M8.5 27V5.5h8a7 7 0 0 1 0 14h-2.5" />
+                <path d="M16.4 16.8l-2.6 2.7 2.6 2.7" />
+                <path d="M19.2 19.9l5.3 7.1" />
+              </g>
+              <rect x="14.2" y="10.2" width="4.6" height="4.6" rx="1" fill="#3CC9A0" />
+            </svg>
+          </figure>
+        </div>
+        <p class="rationale">
+          Files: <code>public/brand/recovik-mark*.svg</code>, <code>recovik-lockup-en*.svg</code>,
+          <code>recovik-lockup-bilingual*.svg</code> (light, dark, mono).
+        </p>
+      </article>
+
+      <article>
+        <span class="badge alt">Alternative</span>
+        <h2>B — Made whole</h2>
+        <p class="rationale">
+          A data block with its missing corner fragment returning: the simplest “broken shape made whole”,
+          strongest at 16 px but the least specific to Recovik.
+        </p>
+        <div class="row">
+          <figure class="tile">
+            <svg viewBox="0 0 32 32" width="128" height="128">
+              <path
+                d="M6 4h20a2 2 0 0 1 2 2v9.5H17.5a2 2 0 0 0-2 2V28H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"
+                fill="#0C1B26"
+              />
+              <rect x="19" y="19" width="9" height="9" rx="2" fill="#0A7258" />
+            </svg>
+            <figcaption>128</figcaption>
+          </figure>
+          <figure class="tile">
+            <svg viewBox="0 0 32 32" width="32" height="32">
+              <path
+                d="M6 4h20a2 2 0 0 1 2 2v9.5H17.5a2 2 0 0 0-2 2V28H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"
+                fill="#0C1B26"
+              />
+              <rect x="19" y="19" width="9" height="9" rx="2" fill="#0A7258" />
+            </svg>
+            <figcaption>32</figcaption>
+          </figure>
+          <figure class="tile">
+            <svg viewBox="0 0 32 32" width="16" height="16">
+              <path
+                d="M6 4h20a2 2 0 0 1 2 2v9.5H17.5a2 2 0 0 0-2 2V28H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"
+                fill="#0C1B26"
+              />
+              <rect x="19" y="19" width="9" height="9" rx="2" fill="#0A7258" />
+            </svg>
+            <figcaption>16</figcaption>
+          </figure>
+          <figure class="tile dark">
+            <svg viewBox="0 0 32 32" width="64" height="64">
+              <path
+                d="M6 4h20a2 2 0 0 1 2 2v9.5H17.5a2 2 0 0 0-2 2V28H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"
+                fill="#E6EDF1"
+              />
+              <rect x="19" y="19" width="9" height="9" rx="2" fill="#3CC9A0" />
+            </svg>
+          </figure>
+        </div>
+      </article>
+
+      <article>
+        <span class="badge alt">Alternative</span>
+        <h2>C — Rewind ring</h2>
+        <p class="rationale">
+          A counter-clockwise restore arc around a recovered block: reads instantly as “restore”, but sits
+          close to generic backup and sync icons.
+        </p>
+        <div class="row">
+          <figure class="tile">
+            <svg viewBox="0 0 32 32" width="128" height="128">
+              <g
+                fill="none"
+                stroke="#0C1B26"
+                stroke-width="3.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9.6 7.7A10.5 10.5 0 1 1 5.5 16" />
+                <path d="M5.7 7.4l3.9.3-.3 3.9" />
+              </g>
+              <rect x="12.5" y="12.5" width="7" height="7" rx="1.6" fill="#0A7258" />
+            </svg>
+            <figcaption>128</figcaption>
+          </figure>
+          <figure class="tile">
+            <svg viewBox="0 0 32 32" width="32" height="32">
+              <g
+                fill="none"
+                stroke="#0C1B26"
+                stroke-width="3.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9.6 7.7A10.5 10.5 0 1 1 5.5 16" />
+                <path d="M5.7 7.4l3.9.3-.3 3.9" />
+              </g>
+              <rect x="12.5" y="12.5" width="7" height="7" rx="1.6" fill="#0A7258" />
+            </svg>
+            <figcaption>32</figcaption>
+          </figure>
+          <figure class="tile">
+            <svg viewBox="0 0 32 32" width="16" height="16">
+              <g
+                fill="none"
+                stroke="#0C1B26"
+                stroke-width="3.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9.6 7.7A10.5 10.5 0 1 1 5.5 16" />
+                <path d="M5.7 7.4l3.9.3-.3 3.9" />
+              </g>
+              <rect x="12.5" y="12.5" width="7" height="7" rx="1.6" fill="#0A7258" />
+            </svg>
+            <figcaption>16</figcaption>
+          </figure>
+          <figure class="tile dark">
+            <svg viewBox="0 0 32 32" width="64" height="64">
+              <g
+                fill="none"
+                stroke="#E6EDF1"
+                stroke-width="3.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9.6 7.7A10.5 10.5 0 1 1 5.5 16" />
+                <path d="M5.7 7.4l3.9.3-.3 3.9" />
+              </g>
+              <rect x="12.5" y="12.5" width="7" height="7" rx="1.6" fill="#3CC9A0" />
+            </svg>
+          </figure>
+        </div>
+      </article>
+    </div>
+  </body>
+</html>

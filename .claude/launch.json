@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "recovik-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev", "--host", "127.0.0.1", "--port", "4321"],
+      "port": 4321
+    },
+    {
+      "name": "recovik-preview",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["preview", "--host", "127.0.0.1", "--port", "4322"],
+      "port": 4322
+    }
+  ]
+}

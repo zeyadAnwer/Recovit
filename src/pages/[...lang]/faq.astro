@@ -1,0 +1,109 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import FaqList from '../../components/sections/FaqList.astro';
+import { localeParams, routes, useI18n, type Locale } from '../../i18n';
+import { getFaqs } from '../../lib/content';
+import { faqJsonLd } from '../../lib/seo';
+
+export const getStaticPaths = () => localeParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const { t, path } = useI18n(locale);
+const faqs = await getFaqs(locale);
+const categories = Object.keys(t.faq.categories) as (keyof typeof t.faq.categories)[];
+const groups = categories
+  .map((category) => ({
+    category,
+    items: faqs
+      .filter((faq) => faq.data.category === category)
+      .map((faq) => ({ question: faq.data.question, answer: faq.data.answer })),
+  }))
+  .filter((group) => group.items.length > 0);
+const allItems = groups.flatMap((group) => group.items);
+---
+
+<PageLayout
+  title={t.meta.faq.title}
+  description={t.meta.faq.description}
+  label={t.nav.faq}
+  heading={t.faq.title}
+  lead={t.faq.lead}
+  crumbs={[{ name: t.nav.faq, href: path(routes.faq) }]}
+  jsonLd={[faqJsonLd(allItems)]}
+>
+  <div class="container faq-page">
+    <nav class="faq-page__toc" aria-label={t.nav.faq}>
+      <ol role="list">
+        {groups.map((group, index) => (
+          <li>
+            <a href={`#faq-${group.category}`}>
+              <span class="mono" aria-hidden="true">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              {t.faq.categories[group.category]}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+    <div class="faq-page__groups">
+      {groups.map((group) => (
+        <section id={`faq-${group.category}`} aria-labelledby={`faq-${group.category}-title`}>
+          <h2 id={`faq-${group.category}-title`}>{t.faq.categories[group.category]}</h2>
+          <FaqList items={group.items} />
+        </section>
+      ))}
+    </div>
+  </div>
+</PageLayout>
+
+<style>
+  @layer components {
+    .faq-page {
+      display: grid;
+      gap: var(--space-xl);
+      padding-block: var(--space-xl);
+    }
+
+    @media (width >= 60rem) {
+      .faq-page {
+        grid-template-columns: 3fr 9fr;
+      }
+
+      .faq-page__toc {
+        position: sticky;
+        inset-block-start: calc(var(--header-height) + var(--space-m));
+        align-self: start;
+      }
+    }
+
+    .faq-page__toc ol {
+      margin: 0;
+      border-block-start: var(--rule);
+    }
+
+    .faq-page__toc a {
+      display: flex;
+      gap: var(--space-xs);
+      align-items: center;
+      min-block-size: var(--target);
+      border-block-end: var(--rule);
+      text-decoration: none;
+      font-size: var(--step--1);
+    }
+
+    .faq-page__toc .mono {
+      color: var(--color-accent);
+    }
+
+    .faq-page__groups {
+      display: grid;
+      gap: var(--space-xl);
+    }
+
+    .faq-page__groups h2 {
+      font-size: var(--step-2);
+      margin-block-end: var(--space-s);
+    }
+  }
+</style>

@@ -1,0 +1,65 @@
+---
+/**
+ * LanguageSwitch — links to the same page in each other language. Plain
+ * links, so it works without JavaScript and is crawlable.
+ */
+import { LOCALE_META, LOCALES, switchLocalePath, useI18n } from '../../i18n';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+const { locale, t } = useI18n(Astro.currentLocale);
+const others = LOCALES.filter((other) => other !== locale);
+---
+
+<nav class:list={['language-switch', className]} aria-label={t.a11y.languageSwitch}>
+  <Icon name="globe" size={18} />
+  {others.map((other) => (
+    <a
+      href={switchLocalePath(Astro.url.pathname, other)}
+      hreflang={LOCALE_META[other].htmlLang}
+      lang={LOCALE_META[other].htmlLang}
+      data-language-link={other}
+    >
+      {LOCALE_META[other].label}
+    </a>
+  ))}
+</nav>
+
+<style>
+  @layer components {
+    .language-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3xs);
+      color: var(--color-muted);
+    }
+
+    .language-switch a {
+      display: inline-flex;
+      align-items: center;
+      min-block-size: var(--target);
+      padding-inline: var(--space-3xs);
+      color: var(--color-text);
+      font-weight: 500;
+      font-size: var(--step--1);
+      text-decoration: none;
+    }
+
+    .language-switch a:lang(ar) {
+      font-family: var(--font-ar-body);
+      font-size: var(--step-0);
+    }
+
+    .language-switch a:lang(en) {
+      font-family: var(--font-en-body);
+    }
+
+    .language-switch a:hover {
+      text-decoration: underline;
+    }
+  }
+</style>

@@ -1,0 +1,164 @@
+---
+/**
+ * PageLayout — inner pages: BaseLayout + breadcrumb + page header (label,
+ * h1, lead). Adds BreadcrumbList JSON-LD automatically.
+ *
+ * @prop title        Meta title.
+ * @prop description  Meta description.
+ * @prop label        Mono label above the h1.
+ * @prop heading      The h1 text (defaults to `title`).
+ * @prop lead         Intro paragraph.
+ * @prop crumbs       Trail after "Home": `{ name, href }[]`; the last item
+ *                    is the current page.
+ * @prop jsonLd       Extra JSON-LD for the page.
+ * @prop noindex      Exclude from search engines.
+ * @slot aside        Optional content beside the header (e.g. illustration).
+ */
+import BaseLayout from './BaseLayout.astro';
+import Icon from '../components/ui/Icon.astro';
+import Label from '../components/ui/Label.astro';
+import { site } from '../config';
+import { routes, useI18n } from '../i18n';
+import { breadcrumbJsonLd } from '../lib/seo';
+
+interface Crumb {
+  name: string;
+  href: string;
+}
+
+interface Props {
+  title: string;
+  description: string;
+  label: string;
+  heading?: string;
+  lead?: string;
+  crumbs: Crumb[];
+  jsonLd?: Record<string, unknown>[];
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  label,
+  heading = title,
+  lead,
+  crumbs,
+  jsonLd = [],
+  noindex = false,
+} = Astro.props;
+const { t, path } = useI18n(Astro.currentLocale);
+const siteUrl = (Astro.site ?? new URL(site.url)).toString();
+const trail = [{ name: t.nav.home, href: path(routes.home) }, ...crumbs];
+const breadcrumbs = breadcrumbJsonLd(
+  trail.map((c) => ({ name: c.name, url: new URL(c.href, siteUrl).toString() })),
+);
+const hasAside = Astro.slots.has('aside');
+---
+
+<BaseLayout title={title} description={description} jsonLd={[breadcrumbs, ...jsonLd]} noindex={noindex}>
+  <header class="page-header">
+    <div class="container">
+      <nav aria-label={t.a11y.breadcrumb} class="breadcrumb">
+        <ol role="list">
+          {trail.map((crumb, index) => (
+            <li>
+              {index < trail.length - 1 ? (
+                <>
+                  <a href={crumb.href}>{crumb.name}</a>
+                  <Icon name="chevron" size={14} />
+                </>
+              ) : (
+                <span aria-current="page">{crumb.name}</span>
+              )}
+            </li>
+          ))}
+        </ol>
+      </nav>
+      <div class:list={['page-header__grid', { 'page-header__grid--aside': hasAside }]}>
+        <div class="page-header__text">
+          <Label tone="accent">{label}</Label>
+          <h1>{heading}</h1>
+          {lead && <p class="lead">{lead}</p>}
+        </div>
+        {hasAside && (
+          <div class="page-header__aside">
+            <slot name="aside" />
+          </div>
+        )}
+      </div>
+    </div>
+  </header>
+  <slot />
+</BaseLayout>
+
+<style>
+  @layer components {
+    .page-header {
+      padding-block: var(--space-s) var(--space-2xl);
+      border-block-end: var(--rule);
+      background:
+        radial-gradient(60rem 24rem at 100% 0%, var(--color-accent-soft), transparent 70%), var(--color-bg);
+    }
+
+    :global([dir='rtl']) .page-header {
+      background:
+        radial-gradient(60rem 24rem at 0% 0%, var(--color-accent-soft), transparent 70%), var(--color-bg);
+    }
+
+    .breadcrumb ol {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3xs);
+      margin: 0 0 var(--space-l);
+      font-size: var(--step--1);
+      color: var(--color-muted);
+    }
+
+    .breadcrumb li {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3xs);
+    }
+
+    .breadcrumb a {
+      display: inline-flex;
+      align-items: center;
+      min-block-size: var(--target);
+      color: inherit;
+    }
+
+    .breadcrumb [aria-current] {
+      color: var(--color-text);
+    }
+
+    .page-header__grid {
+      display: grid;
+      gap: var(--space-xl);
+      align-items: center;
+    }
+
+    @media (width >= 60rem) {
+      .page-header__grid--aside {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--space-2xl);
+      }
+    }
+
+    .page-header__text {
+      display: grid;
+      gap: var(--space-m);
+      justify-items: start;
+    }
+
+    .page-header__text h1 {
+      font-size: var(--step-5);
+    }
+
+    .page-header__aside {
+      display: grid;
+      place-items: center;
+      color: var(--color-text);
+    }
+  }
+</style>

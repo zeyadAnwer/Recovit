@@ -1,0 +1,24 @@
+# build
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# env (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# test & tooling output
+playwright-report/
+test-results/
+.lighthouseci/
+coverage/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/

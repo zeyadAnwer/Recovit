@@ -1,0 +1,62 @@
+---
+/**
+ * SectionHeader — label, headline and an optional one-line lead. Headings
+ * span their whole column; nothing caps their width.
+ *
+ * @prop label   Eyebrow text.
+ * @prop title   Headline (concrete, customer-facing).
+ * @prop lead    Optional supporting line.
+ * @prop id      Heading id, for aria-labelledby on the section.
+ * @prop layout  "stacked" (default) or "split" (title and lead side by side
+ *               on wide screens).
+ */
+import Label from './Label.astro';
+
+interface Props {
+  label: string;
+  title: string;
+  lead?: string | undefined;
+  id?: string;
+  layout?: 'stacked' | 'split';
+}
+
+const { label, title, lead, id, layout = 'stacked' } = Astro.props;
+---
+
+<header class:list={['section-header', `section-header--${layout}`]}>
+  <div class="section-header__title">
+    <Label>{label}</Label>
+    <h2 id={id}>{title}</h2>
+  </div>
+  {lead && <p class="section-header__lead">{lead}</p>}
+  <slot />
+</header>
+
+<style>
+  @layer components {
+    .section-header {
+      display: grid;
+      gap: var(--space-s);
+      margin-block-end: var(--space-xl);
+    }
+
+    .section-header__title {
+      display: grid;
+      gap: var(--space-xs);
+      justify-items: start;
+    }
+
+    .section-header__lead {
+      font-size: var(--step-1);
+      color: var(--color-muted);
+    }
+
+    @media (width >= 60rem) {
+      .section-header--split {
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+        align-items: end;
+        gap: var(--space-2xl);
+      }
+    }
+  }
+</style>

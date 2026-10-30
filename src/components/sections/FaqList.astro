@@ -1,0 +1,92 @@
+---
+/**
+ * FaqList — questions and answers as native <details> disclosures: keyboard
+ * and screen-reader friendly with no JavaScript.
+ *
+ * @prop items  `{ question, answer }[]`; answers are plain text with blank
+ *              lines between paragraphs.
+ * @prop headingLevel  Wrap each question in this heading level. Default 3.
+ */
+import Icon from '../ui/Icon.astro';
+import { paragraphs } from '../../lib/content';
+
+interface Props {
+  items: { question: string; answer: string }[];
+  headingLevel?: 2 | 3;
+}
+
+const { items, headingLevel = 3 } = Astro.props;
+const Heading = headingLevel === 2 ? 'h2' : 'h3';
+---
+
+<div class="faq-list">
+  {items.map((item) => (
+    <details class="faq-list__item">
+      <summary>
+        <Heading class="faq-list__question">{item.question}</Heading>
+        <Icon name="plus" size={20} class="faq-list__icon" />
+      </summary>
+      <div class="faq-list__answer">
+        {paragraphs(item.answer).map((text) => (
+          <p>{text}</p>
+        ))}
+      </div>
+    </details>
+  ))}
+</div>
+
+<style>
+  @layer components {
+    .faq-list {
+      border-block-start: var(--rule-strong);
+    }
+
+    .faq-list__item {
+      border-block-end: var(--rule);
+    }
+
+    .faq-list__item summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-m);
+      min-block-size: var(--target);
+      padding-block: var(--space-s);
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .faq-list__item summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .faq-list__question {
+      font-size: var(--step-1);
+      font-family: var(--font-heading);
+    }
+
+    .faq-list__item summary:hover .faq-list__question {
+      text-decoration: underline;
+      text-decoration-color: var(--color-accent);
+      text-underline-offset: 0.25em;
+    }
+
+    .faq-list__item :global(.faq-list__icon) {
+      color: var(--color-muted);
+      transition: rotate var(--duration-s) var(--ease-out);
+    }
+
+    .faq-list__item[open] :global(.faq-list__icon) {
+      rotate: 45deg;
+      color: var(--color-accent);
+    }
+
+    .faq-list__answer {
+      display: grid;
+      gap: var(--space-xs);
+      padding-block-end: var(--space-m);
+      max-inline-size: var(--measure);
+      color: var(--color-muted);
+    }
+  }
+</style>

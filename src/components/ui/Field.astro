@@ -1,0 +1,161 @@
+---
+/**
+ * Field — labelled text input or textarea with hint and error slots wired up
+ * through aria-describedby. Errors are rendered by the server (no-JS) or
+ * filled in by the form script; the message element always exists so screen
+ * readers announce updates.
+ *
+ * @prop name          Form field name (also the base of the element ids).
+ * @prop label         Visible label.
+ * @prop type          Input type. Default "text". Ignored when `multiline`.
+ * @prop multiline     Render a <textarea>.
+ * @prop required      Marks the field required (and shows the marker).
+ * @prop optionalText  Text shown next to optional labels, e.g. "optional".
+ * @prop hint          Help text under the label.
+ * @prop maxlength     Max characters (mirror the zod limit).
+ * @prop autocomplete  Autocomplete token.
+ * @prop inputmode     Virtual keyboard hint.
+ * @prop pattern       HTML validation pattern (mirror the zod rule).
+ * @prop ltr           Force left-to-right input (phones, emails).
+ * @prop error         Error message to show initially.
+ * @prop formId        Prefix to keep ids unique when two forms share a page.
+ */
+interface Props {
+  name: string;
+  label: string;
+  type?: 'text' | 'email' | 'tel';
+  multiline?: boolean;
+  rows?: number;
+  required?: boolean;
+  optionalText?: string;
+  hint?: string;
+  maxlength?: number;
+  autocomplete?: string;
+  inputmode?: 'text' | 'email' | 'tel' | 'numeric';
+  pattern?: string;
+  ltr?: boolean;
+  error?: string | undefined;
+  formId: string;
+}
+
+const {
+  name,
+  label,
+  type = 'text',
+  multiline = false,
+  rows = 5,
+  required = false,
+  optionalText,
+  hint,
+  maxlength,
+  autocomplete,
+  inputmode,
+  pattern,
+  ltr = false,
+  error,
+  formId,
+} = Astro.props;
+
+const id = `${formId}-${name}`;
+const hintId = hint ? `${id}-hint` : undefined;
+const errorId = `${id}-error`;
+const describedBy = [hintId, errorId].filter(Boolean).join(' ');
+const shared = {
+  id,
+  name,
+  required,
+  maxlength,
+  autocomplete,
+  'aria-describedby': describedBy,
+  'aria-invalid': error ? ('true' as const) : undefined,
+  dir: ltr ? 'ltr' : undefined,
+  'data-field': name,
+};
+---
+
+<div class="field" data-field-wrapper={name}>
+  <label for={id} class="field__label">
+    {label}
+    {!required && optionalText && <span class="field__optional">({optionalText})</span>}
+  </label>
+  {hint && (
+    <p id={hintId} class="field__hint">
+      {hint}
+    </p>
+  )}
+  {multiline ? (
+    <textarea {...shared} rows={rows} class="field__control" />
+  ) : (
+    <input {...shared} type={type} inputmode={inputmode} pattern={pattern} class="field__control" />
+  )}
+  <p id={errorId} class="field__error" data-error-for={name} aria-live="polite">
+    {error}
+  </p>
+</div>
+
+<style>
+  @layer components {
+    .field {
+      display: grid;
+      gap: var(--space-3xs);
+    }
+
+    .field__label {
+      font-weight: 600;
+    }
+
+    .field__optional {
+      font-weight: 400;
+      color: var(--color-muted);
+      margin-inline-start: 0.35em;
+      font-size: var(--step--1);
+    }
+
+    .field__hint {
+      color: var(--color-muted);
+      font-size: var(--step--1);
+    }
+
+    .field__control {
+      inline-size: 100%;
+      min-block-size: var(--target);
+      padding: 0.6rem 0.8rem;
+      border: 1px solid var(--color-line-strong);
+      border-radius: var(--radius-m);
+      background: var(--color-surface);
+      line-height: 1.5;
+    }
+
+    .field__control[dir='ltr'] {
+      text-align: start;
+    }
+
+    :global([dir='rtl']) .field__control[dir='ltr'] {
+      text-align: end;
+    }
+
+    textarea.field__control {
+      resize: vertical;
+    }
+
+    .field__control:focus-visible {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 1px;
+      border-color: var(--color-focus);
+    }
+
+    .field__control[aria-invalid='true'] {
+      border-color: var(--color-danger);
+    }
+
+    .field__error {
+      color: var(--color-danger);
+      font-size: var(--step--1);
+      font-weight: 500;
+    }
+
+    .field__error:empty {
+      display: none;
+    }
+  }
+</style>

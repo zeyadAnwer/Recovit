@@ -1,0 +1,64 @@
+---
+/**
+ * EmergencyBanner — one calm line above the header pointing to the 24/7 line.
+ * Shown only when `features.emergencyBanner` is on and the emergency number
+ * is filled in.
+ */
+import Icon from '../ui/Icon.astro';
+import { site } from '../../config';
+import { useI18n } from '../../i18n';
+import { formatPhone, telHref } from '../../lib/contact';
+
+const { t } = useI18n(Astro.currentLocale);
+const href = telHref(site.phones.emergency);
+const show = site.features.emergencyBanner && href;
+---
+
+{show && (
+  <aside class="emergency-banner" aria-label={t.common.emergency}>
+    <div class="container emergency-banner__inner">
+      <span class="emergency-banner__dot" aria-hidden="true" />
+      <p>{t.emergencyBanner.text}</p>
+      <a href={href} class="emergency-banner__link">
+        <Icon name="call" size={16} />
+        {t.emergencyBanner.action}
+        <bdi class="mono">{formatPhone(site.phones.emergency)}</bdi>
+      </a>
+    </div>
+  </aside>
+)}
+
+<style>
+  @layer components {
+    .emergency-banner {
+      background: var(--color-text);
+      color: var(--color-bg);
+      font-size: var(--step--1);
+    }
+
+    .emergency-banner__inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-3xs) var(--space-s);
+      min-block-size: 2.5rem;
+      padding-block: var(--space-3xs);
+    }
+
+    .emergency-banner__dot {
+      inline-size: 0.5rem;
+      block-size: 0.5rem;
+      border-radius: 50%;
+      background: var(--color-accent);
+    }
+
+    .emergency-banner__link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-3xs);
+      min-block-size: var(--target);
+      margin-inline-start: auto;
+      font-weight: 600;
+    }
+  }
+</style>

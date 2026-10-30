@@ -1,0 +1,122 @@
+---
+/**
+ * ReceiptPage — server-rendered result of a form posted without JavaScript.
+ * Reads the Action result for this request: success shows the receipt,
+ * failure lists which fields to fix (labels and generic messages only — the
+ * submitted values are never echoed back), and a direct visit redirects to
+ * the form.
+ *
+ * @prop kind  "case" or "message".
+ */
+import { actions, isInputError } from 'astro:actions';
+import PageLayout from '../../layouts/PageLayout.astro';
+import Button from '../ui/Button.astro';
+import Receipt from './Receipt.astro';
+import { routes, useI18n } from '../../i18n';
+import { toErrorCode } from '../../lib/validation/fields';
+
+interface Props {
+  kind: 'case' | 'message';
+}
+
+const { kind } = Astro.props;
+const { t, path } = useI18n(Astro.currentLocale);
+const formPath = path(kind === 'case' ? routes.startCase : routes.contact);
+const result = Astro.getActionResult(kind === 'case' ? actions.submitCase : actions.sendMessage);
+
+Astro.response.headers.set('Cache-Control', 'no-store');
+
+const labels: Record<string, string> =
+  kind === 'case' ? { ...t.caseForm.fields } : { ...t.contactPage.fields };
+
+let problems: { label: string; message: string }[] = [];
+let generic: string | undefined;
+let caseRef: string | undefined;
+
+if (result?.error) {
+  Astro.response.status = result.error.status;
+  if (isInputError(result.error)) {
+    problems = Object.entries(result.error.fields).map(([name, codes]) => ({
+      label: labels[name] ?? name,
+      message: t.errors[toErrorCode((codes as string[] | undefined)?.[0])],
+    }));
+  } else {
+    const code = result.error.message;
+    generic = code === 'rateLimited' || code === 'captcha' ? t.errors[code] : t.errors.generic;
+  }
+} else if (result?.data && 'ref' in result.data) {
+  caseRef = result.data.ref;
+}
+
+const meta = kind === 'case' ? t.meta.caseSent : t.meta.contactSent;
+---
+
+{result && (
+  <PageLayout
+    title={meta.title}
+    description={meta.description}
+    label={kind === 'case' ? t.caseForm.label : t.contactPage.label}
+    heading={result.error ? t.receipt.errorTitle : meta.title}
+    crumbs={[{ name: kind === 'case' ? t.nav.startCase : t.nav.contact, href: formPath }]}
+    noindex
+  >
+    <div class="container section receipt-page">
+      {result.error ? (
+        <div class="receipt-page__error" role="alert">
+          {generic ? (
+            <p>{generic}</p>
+          ) : (
+            <>
+              <p>{t.errors.summaryTitle}</p>
+              <ul>
+                {problems.map((problem) => (
+                  <li>
+                    <strong>{problem.label}</strong> — {problem.message}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          <Button href={formPath} variant="secondary" icon="chevron" class="receipt-page__back">
+            {t.receipt.backToForm}
+          </Button>
+        </div>
+      ) : (
+        <Receipt kind={kind} caseRef={caseRef} />
+      )}
+    </div>
+  </PageLayout>
+)}
+
+<style>
+  @layer components {
+    .receipt-page {
+      max-inline-size: 48rem;
+      margin-inline: auto;
+    }
+
+    .receipt-page__error {
+      display: grid;
+      gap: var(--space-s);
+      justify-items: start;
+      padding: var(--space-l);
+      border: 1px solid var(--color-danger);
+      border-inline-start-width: 6px;
+      background: var(--color-surface);
+    }
+
+    .receipt-page__error ul {
+      padding-inline-start: 1.25em;
+      display: grid;
+      gap: var(--space-3xs);
+    }
+
+    .receipt-page :global(.receipt-page__back svg) {
+      transform: scaleX(-1);
+    }
+
+    :global([dir='rtl']) .receipt-page :global(.receipt-page__back svg) {
+      transform: none;
+    }
+  }
+</style>

@@ -1,0 +1,90 @@
+---
+/**
+ * NotFound — localized 404 body with useful next steps. Used by
+ * src/pages/404.astro (default language) and src/pages/en/404.astro.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Button from '../ui/Button.astro';
+import Label from '../ui/Label.astro';
+import Spot from '../ui/illustrations/Spot.astro';
+import { routes, useI18n } from '../../i18n';
+
+const { t, path } = useI18n(Astro.currentLocale);
+const links = [
+  { label: t.nav.startCase, href: path(routes.startCase) },
+  { label: t.nav.services, href: path(routes.services) },
+  { label: t.nav.faq, href: path(routes.faq) },
+  { label: t.nav.contact, href: path(routes.contact) },
+];
+---
+
+<BaseLayout title={t.meta.notFound.title} description={t.meta.notFound.description} noindex>
+  <section class="container not-found">
+    <div class="not-found__text">
+      <Label tone="accent">{t.notFound.label}</Label>
+      <h1>{t.notFound.title}</h1>
+      <p class="lead">{t.notFound.body}</p>
+      <ul role="list" class="not-found__links">
+        {links.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))}
+      </ul>
+      <Button href={path(routes.home)} variant="secondary">
+        {t.cta.backHome}
+      </Button>
+    </div>
+    <Spot name="recoverDeleted" size={200} class="not-found__art" />
+  </section>
+</BaseLayout>
+
+<style>
+  @layer components {
+    .not-found {
+      display: grid;
+      gap: var(--space-xl);
+      align-items: center;
+      padding-block: var(--space-2xl);
+    }
+
+    @media (width >= 60rem) {
+      .not-found {
+        grid-template-columns: 7fr 5fr;
+      }
+    }
+
+    .not-found__text {
+      display: grid;
+      gap: var(--space-m);
+      justify-items: start;
+    }
+
+    .not-found__links {
+      display: grid;
+      margin: 0;
+      inline-size: 100%;
+      max-inline-size: 28rem;
+      border-block-start: var(--rule);
+    }
+
+    .not-found__links a {
+      display: flex;
+      align-items: center;
+      min-block-size: var(--target);
+      border-block-end: var(--rule);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .not-found__links a:hover {
+      color: var(--color-secondary);
+    }
+
+    .not-found :global(.not-found__art) {
+      color: var(--color-muted);
+      max-inline-size: 22rem;
+      opacity: 0.6;
+    }
+  }
+</style>

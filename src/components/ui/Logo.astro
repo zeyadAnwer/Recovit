@@ -1,0 +1,105 @@
+---
+/**
+ * Logo — the Recovik "Restore R": an R whose bowl is a rewind arc ending in
+ * an arrowhead, closing around a recovered data block (accent colour).
+ * Never mirrored in RTL.
+ *
+ * @prop variant  "auto" (default): bilingual lockup on Arabic pages, Latin
+ *                lockup on English pages. "bilingual" or "latin" to force.
+ * @prop compact  Mark only, no wordmark.
+ * @prop size     Mark size in px. Default 34.
+ */
+import { site } from '../../config';
+import { useI18n } from '../../i18n';
+
+interface Props {
+  variant?: 'auto' | 'bilingual' | 'latin';
+  compact?: boolean;
+  size?: number;
+}
+
+const { variant = 'auto', compact = false, size = 34 } = Astro.props;
+const { locale } = useI18n(Astro.currentLocale);
+const bilingual = variant === 'bilingual' || (variant === 'auto' && locale === 'ar');
+---
+
+<span
+  class:list={['logo', { 'logo--bilingual': bilingual && !compact }]}
+  data-logo={bilingual ? 'bilingual' : 'latin'}
+>
+  <svg class="logo__mark" viewBox="0 0 32 32" width={size} height={size} aria-hidden="true">
+    <g fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8.5 27V5.5h8a7 7 0 0 1 0 14h-2.5"></path>
+      <path d="M16.4 16.8l-2.6 2.7 2.6 2.7"></path>
+      <path d="M19.2 19.9l5.3 7.1"></path>
+    </g>
+    <rect class="logo__block" x="14.2" y="10.2" width="4.6" height="4.6" rx="1"></rect>
+  </svg>
+  {!compact &&
+    (bilingual ? (
+      <span class="logo__words">
+        <span class="logo__ar" lang="ar">
+          {site.nameAr}
+        </span>
+        <span class="logo__latin logo__latin--small" lang="en" dir="ltr">
+          {site.name}
+        </span>
+      </span>
+    ) : (
+      <span class="logo__latin" lang="en" dir="ltr">
+        {site.name}
+      </span>
+    ))}
+</span>
+
+<style>
+  @layer components {
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      color: var(--color-text);
+    }
+
+    .logo__mark {
+      flex-shrink: 0;
+    }
+
+    .logo__block {
+      fill: var(--color-accent);
+    }
+
+    .logo__latin {
+      font-family: var(--font-wordmark);
+      font-weight: 650;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+
+    /* Both names align to the page's start edge (right in Arabic). */
+    .logo__words {
+      display: grid;
+      justify-items: start;
+      gap: 0.2rem;
+      line-height: 1;
+    }
+
+    .logo__ar {
+      font-family: var(--font-ar-heading);
+      font-weight: 700;
+      font-size: 1.3rem;
+      line-height: 1.05;
+    }
+
+    /* Secondary Latin name in the bilingual lockup: smaller, spaced capitals,
+       aligned to the same start edge as the Arabic name. */
+    .logo__latin--small {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+    }
+  }
+</style>

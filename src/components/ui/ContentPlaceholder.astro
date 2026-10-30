@@ -1,0 +1,43 @@
+---
+/**
+ * ContentPlaceholder — marks copy the owner must still write, such as the
+ * company story. Visibly a placeholder so it is never mistaken for real copy;
+ * `pnpm launch:check` lists every token used.
+ *
+ * @prop token  Placeholder token, e.g. "ABOUT_STORY".
+ * @prop hint   What to write there (shown to the editor).
+ */
+import { useI18n } from '../../i18n';
+
+interface Props {
+  token: string;
+  hint: string;
+}
+
+const { token, hint } = Astro.props;
+const { t } = useI18n(Astro.currentLocale);
+---
+
+<div class="content-placeholder" data-placeholder={token}>
+  <p class="mono">
+    <span class="ltr">[{token}]</span> · {t.common.placeholderNote}
+  </p>
+  <p class="content-placeholder__hint">{hint}</p>
+</div>
+
+<style>
+  @layer components {
+    .content-placeholder {
+      border: 1px dashed var(--color-line-strong);
+      padding: var(--space-m);
+      color: var(--color-muted);
+      background: var(--color-surface);
+      max-inline-size: var(--measure);
+    }
+
+    .content-placeholder__hint {
+      margin-block-start: var(--space-2xs);
+      font-size: var(--step--1);
+    }
+  }
+</style>

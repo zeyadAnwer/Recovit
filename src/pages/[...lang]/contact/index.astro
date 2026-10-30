@@ -1,0 +1,202 @@
+---
+import PageLayout from '../../../layouts/PageLayout.astro';
+import ContactForm from '../../../components/forms/ContactForm.astro';
+import Button from '../../../components/ui/Button.astro';
+import Icon from '../../../components/ui/Icon.astro';
+import { filled, site } from '../../../config';
+import { localeParams, pick, routes, useI18n, type Locale } from '../../../i18n';
+import { formatPhone, mailHref, telHref, whatsappHref } from '../../../lib/contact';
+import type { IconName } from '../../../components/ui/icons';
+
+export const getStaticPaths = () => localeParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const { t, path } = useI18n(locale);
+
+interface Channel {
+  icon: IconName;
+  label: string;
+  value: string;
+  href?: string | undefined;
+  note?: string;
+  ltr?: boolean;
+  external?: boolean;
+}
+
+const channels: Channel[] = [];
+const emergency = telHref(site.phones.emergency);
+if (emergency) {
+  channels.push({
+    icon: 'call',
+    label: t.common.emergency,
+    value: formatPhone(site.phones.emergency),
+    href: emergency,
+    note: t.common.available247,
+    ltr: true,
+  });
+}
+const main = telHref(site.phones.main);
+if (main)
+  channels.push({
+    icon: 'call',
+    label: t.common.phone,
+    value: formatPhone(site.phones.main),
+    href: main,
+    ltr: true,
+  });
+const whatsapp = whatsappHref(site.whatsapp);
+if (whatsapp) {
+  channels.push({
+    icon: 'whatsapp',
+    label: t.common.whatsapp,
+    value: formatPhone(site.whatsapp),
+    href: whatsapp,
+    ltr: true,
+    external: true,
+  });
+}
+for (const key of ['info', 'support', 'sales'] as const) {
+  channels.push({
+    icon: 'mail',
+    label: t.common.email,
+    value: site.emails[key],
+    href: mailHref(site.emails[key]),
+    ltr: true,
+  });
+}
+const address = filled(pick(site.address, locale));
+const hours = filled(pick(site.hours, locale));
+const mapUrl = filled(site.mapUrl);
+---
+
+<PageLayout
+  title={t.meta.contact.title}
+  description={t.meta.contact.description}
+  label={t.contactPage.label}
+  heading={t.contactPage.title}
+  lead={t.contactPage.lead}
+  crumbs={[{ name: t.nav.contact, href: path(routes.contact) }]}
+>
+  <div class="container contact">
+    <section aria-labelledby="channels-title" class="contact__channels">
+      <h2 id="channels-title">{t.contactPage.channelsTitle}</h2>
+      <ul role="list">
+        {channels.map((channel) => (
+          <li>
+            <Icon name={channel.icon} size={22} />
+            <div>
+              <p class="contact__label">
+                {channel.label}
+                {channel.note && <span class="contact__note"> · {channel.note}</span>}
+              </p>
+              <a href={channel.href} {...(channel.external ? { rel: 'noopener', target: '_blank' } : {})}>
+                {channel.ltr ? <bdi>{channel.value}</bdi> : channel.value}
+              </a>
+            </div>
+          </li>
+        ))}
+        {address && (
+          <li>
+            <Icon name="pin" size={22} />
+            <div>
+              <p class="contact__label">{t.common.address}</p>
+              <p>{address}</p>
+              {mapUrl && (
+                <a href={mapUrl} rel="noopener" target="_blank">
+                  {t.cta.openMap} <span class="visually-hidden">{t.a11y.newTab}</span>
+                </a>
+              )}
+            </div>
+          </li>
+        )}
+        {hours && (
+          <li>
+            <Icon name="clock" size={22} />
+            <div>
+              <p class="contact__label">{t.common.hours}</p>
+              <p>{hours}</p>
+            </div>
+          </li>
+        )}
+      </ul>
+      <Button href={path(routes.startCase)} arrow>
+        {t.cta.startCase}
+      </Button>
+    </section>
+
+    <section aria-labelledby="form-title" class="contact__form">
+      <h2 id="form-title">{t.contactPage.formTitle}</h2>
+      <p class="contact__lead">{t.contactPage.formLead}</p>
+      <ContactForm />
+    </section>
+  </div>
+</PageLayout>
+
+<style>
+  @layer components {
+    .contact {
+      display: grid;
+      gap: var(--space-2xl);
+      padding-block: var(--space-xl);
+    }
+
+    @media (width >= 64rem) {
+      .contact {
+        grid-template-columns: 5fr 7fr;
+      }
+    }
+
+    .contact h2 {
+      font-size: var(--step-2);
+      margin-block-end: var(--space-s);
+    }
+
+    .contact__channels {
+      display: grid;
+      gap: var(--space-m);
+      align-content: start;
+      justify-items: start;
+    }
+
+    .contact__channels ul {
+      inline-size: 100%;
+      margin: 0;
+      border-block-start: var(--rule-strong);
+    }
+
+    .contact__channels li {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--space-s);
+      padding-block: var(--space-s);
+      border-block-end: var(--rule);
+    }
+
+    .contact__channels li > :global(svg) {
+      color: var(--color-secondary);
+      margin-block-start: 0.2em;
+    }
+
+    .contact__label {
+      color: var(--color-muted);
+      font-size: var(--step--1);
+    }
+
+    .contact__note {
+      color: var(--color-secondary);
+    }
+
+    .contact__channels a {
+      display: inline-flex;
+      align-items: center;
+      min-block-size: var(--target);
+      font-weight: 600;
+      font-size: var(--step-1);
+    }
+
+    .contact__lead {
+      color: var(--color-muted);
+      margin-block-end: var(--space-l);
+    }
+  }
+</style>

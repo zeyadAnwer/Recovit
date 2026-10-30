@@ -1,0 +1,70 @@
+---
+/**
+ * PhotoPlaceholder — reserves the exact space of a future photograph and says
+ * what it should show, e.g. "[PHOTO: clean-room workstation]". Replace it with
+ * <Image /> from astro:assets once the real photo exists (see CONTENT-GUIDE).
+ *
+ * @prop subject  What the photo should show (shown in the box).
+ * @prop ratio    Aspect ratio, e.g. "4 / 3". Default "4 / 3".
+ */
+interface Props {
+  subject: string;
+  ratio?: string;
+  class?: string;
+}
+
+const { subject, ratio = '4 / 3', class: className } = Astro.props;
+---
+
+<figure class:list={['photo-placeholder', className]} data-ratio={ratio} data-placeholder="photo">
+  <svg class="photo-placeholder__frame" viewBox="0 0 100 75" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 0L100 75M100 0L0 75" vector-effect="non-scaling-stroke"></path>
+  </svg>
+  <figcaption class="mono">
+    <span class="ltr">[PHOTO: {subject}]</span>
+  </figcaption>
+</figure>
+
+<style>
+  @layer components {
+    .photo-placeholder {
+      position: relative;
+      display: grid;
+      place-items: center;
+      aspect-ratio: 4 / 3;
+      border: 1px dashed var(--color-line-strong);
+      background: var(--color-surface);
+      color: var(--color-muted);
+      overflow: hidden;
+    }
+
+    .photo-placeholder[data-ratio='16 / 9'] {
+      aspect-ratio: 16 / 9;
+    }
+
+    .photo-placeholder[data-ratio='3 / 4'] {
+      aspect-ratio: 3 / 4;
+    }
+
+    .photo-placeholder[data-ratio='1 / 1'] {
+      aspect-ratio: 1 / 1;
+    }
+
+    .photo-placeholder__frame {
+      position: absolute;
+      inset: 0;
+      inline-size: 100%;
+      block-size: 100%;
+      stroke: var(--color-line);
+      stroke-width: 1;
+      fill: none;
+    }
+
+    .photo-placeholder figcaption {
+      position: relative;
+      padding: var(--space-2xs) var(--space-xs);
+      background: var(--color-surface);
+      text-align: center;
+    }
+  }
+</style>

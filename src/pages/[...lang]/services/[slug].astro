@@ -1,0 +1,359 @@
+---
+import { render } from 'astro:content';
+import PageLayout from '../../../layouts/PageLayout.astro';
+import Icon from '../../../components/ui/Icon.astro';
+import Spot from '../../../components/ui/illustrations/Spot.astro';
+import FaqList from '../../../components/sections/FaqList.astro';
+import { spotFor } from '../../../components/ui/illustrations/spots';
+import { site } from '../../../config';
+import { DEFAULT_LOCALE, LOCALES, routes, useI18n, type Locale } from '../../../i18n';
+import { formatPhone, telHref } from '../../../lib/contact';
+import { getServices } from '../../../lib/content';
+import { faqJsonLd, serviceJsonLd } from '../../../lib/seo';
+
+export async function getStaticPaths() {
+  const perLocale = await Promise.all(
+    LOCALES.map(async (locale) => {
+      const services = await getServices(locale);
+      return services.map((service) => ({
+        params: { lang: locale === DEFAULT_LOCALE ? undefined : locale, slug: service.slug },
+        props: { locale, slug: service.slug },
+      }));
+    }),
+  );
+  return perLocale.flat();
+}
+
+const { locale, slug } = Astro.props as { locale: Locale; slug: string };
+const { t, path } = useI18n(locale);
+const services = await getServices(locale);
+const service = services.find((item) => item.slug === slug);
+if (!service) throw new Error(`Unknown service slug "${slug}"`);
+const { data } = service.entry;
+const { Content } = await render(service.entry);
+const others = services.filter((other) => other.slug !== slug);
+const s = t.services.sections;
+const emergency = telHref(site.phones.emergency);
+const siteUrl = (Astro.site ?? new URL(site.url)).toString();
+const url = new URL(path(routes.service(slug)), siteUrl).toString();
+const jsonLd = [
+  serviceJsonLd({ name: data.title, description: data.description, url, siteUrl }),
+  ...(data.faq.length ? [faqJsonLd(data.faq)] : []),
+];
+---
+
+<PageLayout
+  title={data.title}
+  description={data.description}
+  label={t.nav.services}
+  heading={data.title}
+  lead={data.lead}
+  crumbs={[
+    { name: t.nav.services, href: path(routes.services) },
+    { name: data.title, href: path(routes.service(slug)) },
+  ]}
+  jsonLd={jsonLd}
+>
+  <Spot slot="aside" name={spotFor(service.icon)} size={168} />
+
+  <div class="container svc">
+    <article class="svc__main">
+      <section aria-labelledby="what-is" class="svc__block">
+        <h2 id="what-is" data-structural>
+          {s.whatIs}
+        </h2>
+        <div class="prose svc__prose">
+          <Content />
+        </div>
+      </section>
+
+      <section aria-labelledby="signs" class="svc__block">
+        <h2 id="signs" data-structural>
+          {s.signs}
+        </h2>
+        <ul role="list" class="svc__signs">
+          {data.signs.map((sign) => (
+            <li>
+              <Icon name="alert" size={20} />
+              <span>{sign}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="what-we-do" class="svc__block">
+        <h2 id="what-we-do" data-structural>
+          {s.whatWeDo}
+        </h2>
+        <ol role="list" class="svc__steps">
+          {data.whatWeDo.map((step, i) => (
+            <li>
+              <span class="svc__step-num" aria-hidden="true">
+                {i + 1}
+              </span>
+              <div>
+                <h3>{step.title}</h3>
+                <p>{step.body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section aria-labelledby="deliverables" class="svc__block svc__deliverables">
+        <h2 id="deliverables" data-structural>
+          {s.deliverables}
+        </h2>
+        <ul role="list">
+          {data.deliverables.map((item) => (
+            <li>
+              <Icon name="check" size={20} />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="we-need" class="svc__block">
+        <h2 id="we-need" data-structural>
+          {s.weNeed}
+        </h2>
+        <ul role="list" class="svc__need">
+          {data.weNeed.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      </section>
+
+      {data.faq.length > 0 && (
+        <section aria-labelledby="svc-faq" class="svc__block">
+          <h2 id="svc-faq" data-structural>
+            {s.faq}
+          </h2>
+          <FaqList items={data.faq} />
+        </section>
+      )}
+    </article>
+
+    <aside class="svc__aside">
+      <div class="svc__card">
+        <a href={path(routes.startCase)} class="svc__case">
+          {t.services.startForThis}
+          <Icon name="arrow" size={18} />
+        </a>
+        {emergency && (
+          <a href={emergency} class="svc__call">
+            <Icon name="call" size={18} />
+            <bdi>{formatPhone(site.phones.emergency)}</bdi>
+          </a>
+        )}
+      </div>
+      <nav aria-labelledby="other-services" class="svc__others">
+        <h2 id="other-services">{t.services.otherServices}</h2>
+        <ul role="list">
+          {others.map((other) => (
+            <li>
+              <a href={path(routes.service(other.slug))}>
+                <Icon name={other.icon} size={20} />
+                {other.entry.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
+  </div>
+</PageLayout>
+
+<style>
+  @layer components {
+    .svc {
+      display: grid;
+      gap: var(--space-2xl);
+      padding-block: var(--space-2xl) 0;
+    }
+
+    @media (width >= 64rem) {
+      .svc {
+        grid-template-columns: minmax(0, 1fr) 20rem;
+      }
+
+      .svc__aside {
+        position: sticky;
+        inset-block-start: calc(var(--header-height) + var(--space-m));
+        align-self: start;
+      }
+    }
+
+    .svc__main {
+      display: grid;
+      gap: var(--space-2xl);
+    }
+
+    .svc__block h2 {
+      margin-block-end: var(--space-m);
+      font-size: var(--step-3);
+    }
+
+    .svc__prose {
+      font-size: var(--step-1);
+    }
+
+    .svc__signs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+      gap: var(--space-xs);
+      margin: 0;
+    }
+
+    .svc__signs li {
+      display: flex;
+      gap: var(--space-xs);
+      align-items: flex-start;
+      padding: var(--space-s);
+      border: var(--rule);
+      border-radius: var(--radius-m);
+      background: var(--color-surface);
+    }
+
+    .svc__signs :global(svg) {
+      flex-shrink: 0;
+      margin-block-start: 0.15em;
+      color: var(--color-alert);
+    }
+
+    .svc__steps {
+      display: grid;
+      gap: var(--space-m);
+      margin: 0;
+      counter-reset: step;
+    }
+
+    .svc__steps li {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--space-s);
+    }
+
+    .svc__step-num {
+      display: grid;
+      place-items: center;
+      inline-size: 2.5rem;
+      block-size: 2.5rem;
+      border: 2px solid var(--color-accent);
+      border-radius: 50%;
+      color: var(--color-accent);
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    .svc__steps h3 {
+      font-size: var(--step-1);
+      margin-block-end: var(--space-3xs);
+    }
+
+    .svc__steps p {
+      color: var(--color-muted);
+    }
+
+    .svc__deliverables {
+      padding: var(--space-l);
+      border: 1px solid var(--color-accent);
+      border-radius: var(--radius-l);
+      background: var(--color-accent-soft);
+    }
+
+    .svc__deliverables ul {
+      display: grid;
+      gap: var(--space-s);
+      margin: 0;
+    }
+
+    .svc__deliverables li {
+      display: flex;
+      gap: var(--space-xs);
+      align-items: flex-start;
+      font-weight: 550;
+    }
+
+    .svc__deliverables :global(svg) {
+      flex-shrink: 0;
+      margin-block-start: 0.2em;
+      color: var(--color-accent);
+    }
+
+    .svc__need {
+      display: grid;
+      margin: 0;
+      border-block-start: var(--rule);
+    }
+
+    .svc__need li {
+      padding-block: var(--space-s);
+      border-block-end: var(--rule);
+    }
+
+    .svc__card {
+      display: grid;
+      gap: var(--space-xs);
+      padding: var(--space-m);
+      border-radius: var(--radius-l);
+      background: var(--color-band);
+      color: var(--color-band-text);
+    }
+
+    .svc__case,
+    .svc__call {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2xs);
+      min-block-size: 3rem;
+      border-radius: var(--radius-pill);
+      font-weight: 650;
+      text-decoration: none;
+    }
+
+    .svc__case {
+      background: var(--color-accent);
+      color: var(--color-on-accent);
+    }
+
+    .svc__call {
+      background: var(--color-alert);
+      color: var(--color-on-alert);
+    }
+
+    .svc__others {
+      margin-block-start: var(--space-l);
+    }
+
+    .svc__others h2 {
+      margin-block-end: var(--space-xs);
+      font-size: var(--step-0);
+    }
+
+    .svc__others ul {
+      margin: 0;
+      border-block-start: var(--rule);
+    }
+
+    .svc__others a {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      min-block-size: var(--target);
+      border-block-end: var(--rule);
+      font-size: var(--step--1);
+      text-decoration: none;
+    }
+
+    .svc__others a:hover {
+      color: var(--color-accent);
+    }
+
+    .svc__others :global(svg) {
+      color: var(--color-accent);
+    }
+  }
+</style>

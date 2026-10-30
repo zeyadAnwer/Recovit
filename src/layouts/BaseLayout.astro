@@ -1,0 +1,142 @@
+---
+/**
+ * BaseLayout — the HTML document shell shared by every page: <head> metadata
+ * (title, description, canonical, hreflang, Open Graph, JSON-LD), theme
+ * bootstrapping without flash, and the header/footer chrome.
+ *
+ * @prop title        Page title; " · Recovik" is appended unless `exactTitle`.
+ * @prop exactTitle   Use `title` as-is (home page).
+ * @prop description  Meta description, unique per page and language.
+ * @prop jsonLd       Extra JSON-LD objects for this page.
+ * @prop noindex      Exclude from search engines (form receipts, 404).
+ */
+import 'virtual:recovik/brand.css';
+import fontPreloads from 'virtual:recovik/font-preloads';
+import '../styles/global.css';
+import Footer from '../components/layout/Footer.astro';
+import Header from '../components/layout/Header.astro';
+import EmergencyBanner from '../components/layout/EmergencyBanner.astro';
+import WhatsAppButton from '../components/layout/WhatsAppButton.astro';
+import Analytics from '../components/layout/Analytics.astro';
+import { site } from '../config';
+import { LOCALE_META, LOCALES, DEFAULT_LOCALE, switchLocalePath, useI18n } from '../i18n';
+import { brandName, organizationJsonLd, pageTitle, serializeJsonLd } from '../lib/seo';
+
+interface Props {
+  title?: string | undefined;
+  exactTitle?: boolean;
+  description: string;
+  jsonLd?: Record<string, unknown>[];
+  noindex?: boolean;
+}
+
+const { title, exactTitle = false, description, jsonLd = [], noindex = false } = Astro.props;
+const { locale, t, dir } = useI18n(Astro.currentLocale);
+const meta = LOCALE_META[locale];
+const siteUrl = (Astro.site ?? new URL(site.url)).toString();
+const canonical = new URL(Astro.url.pathname, siteUrl).toString();
+const fullTitle = exactTitle && title ? title : pageTitle(title, t.meta.titleSuffix, locale);
+const ogImage = new URL(`/og/${locale}.png`, siteUrl).toString();
+const alternates = LOCALES.map((alt) => ({
+  hreflang: LOCALE_META[alt].htmlLang,
+  href: new URL(switchLocalePath(Astro.url.pathname, alt), siteUrl).toString(),
+}));
+const xDefault = new URL(switchLocalePath(Astro.url.pathname, DEFAULT_LOCALE), siteUrl).toString();
+const structuredData = [organizationJsonLd(locale, siteUrl), ...jsonLd];
+---
+
+<!doctype html>
+<html lang={meta.htmlLang} dir={dir} data-theme={site.defaultTheme}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Runs before first paint so the stored theme never flashes. -->
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        root.classList.add('js');
+        try {
+          const stored = localStorage.getItem('recovik-theme');
+          if (stored === 'light' || stored === 'dark') root.setAttribute('data-theme', stored);
+        } catch {
+          // Storage blocked: keep the default theme.
+        }
+      })();
+    </script>
+    {(fontPreloads[locale] ?? []).map((href) => (
+      <link rel="preload" href={href} as="font" type="font/woff2" crossorigin />
+    ))}
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {alternates.map((alt) => (
+      <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+    ))}
+    <link rel="alternate" hreflang="x-default" href={xDefault} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content={site.brand.light.paper} media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content={site.brand.dark.paper} media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={brandName(locale)} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={meta.ogLocale} />
+    {LOCALES.filter((alt) => alt !== locale).map((alt) => (
+      <meta property="og:locale:alternate" content={LOCALE_META[alt].ogLocale} />
+    ))}
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json" set:html={serializeJsonLd(structuredData)} />
+    <Analytics />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      {t.a11y.skipToContent}
+    </a>
+    <EmergencyBanner />
+    <Header />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+    <WhatsAppButton />
+    <script>
+      import '../scripts/reveal';
+    </script>
+  </body>
+</html>
+
+<style>
+  @layer components {
+    .skip-link {
+      position: absolute;
+      inset-block-start: var(--space-2xs);
+      inset-inline-start: var(--space-2xs);
+      z-index: 100;
+      padding: var(--space-2xs) var(--space-s);
+      background: var(--color-text);
+      color: var(--color-bg);
+      font-weight: 600;
+      translate: 0 -200%;
+    }
+
+    .skip-link:focus {
+      translate: 0 0;
+    }
+
+    main:focus {
+      outline: none;
+    }
+  }
+</style>

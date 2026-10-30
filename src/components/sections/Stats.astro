@@ -1,0 +1,74 @@
+---
+/**
+ * Stats — the figures from `site.config.ts → stats`. Shows only real values;
+ * renders nothing at all when every figure is still a placeholder or empty.
+ * We never invent numbers.
+ */
+import Label from '../ui/Label.astro';
+import { filled, site } from '../../config';
+import { useI18n } from '../../i18n';
+
+const { t } = useI18n(Astro.currentLocale);
+const keys = ['casesHandled', 'yearsOfExperience', 'successRate'] as const;
+const figures = keys.flatMap((key) => {
+  const value = filled(site.stats[key]);
+  return value ? [{ value, label: t.home.stats[key] }] : [];
+});
+---
+
+{figures.length > 0 && (
+  <section class="stats" aria-labelledby="stats-title">
+    <div class="container">
+      <Label>
+        <span id="stats-title">{t.home.stats.label}</span>
+      </Label>
+      <dl class="stats__list">
+        {figures.map((figure) => (
+          <div>
+            <dt>{figure.label}</dt>
+            <dd>
+              <bdi>{figure.value}</bdi>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+)}
+
+<style>
+  @layer components {
+    .stats {
+      padding-block: var(--space-l);
+      border-block: var(--rule);
+    }
+
+    .stats__list {
+      display: grid;
+      gap: var(--space-m);
+      margin-block-start: var(--space-s);
+    }
+
+    @media (width >= 40rem) {
+      .stats__list {
+        grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+      }
+    }
+
+    .stats__list div {
+      display: flex;
+      flex-direction: column-reverse;
+      gap: var(--space-3xs);
+    }
+
+    .stats__list dd {
+      font-family: var(--font-heading);
+      font-size: var(--step-4);
+      line-height: 1;
+    }
+
+    .stats__list dt {
+      color: var(--color-muted);
+    }
+  }
+</style>

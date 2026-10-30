@@ -1,0 +1,467 @@
+---
+/**
+ * HomeSections — the summary sections of the home page. Each section has one
+ * headline, at most one or two short lines and one action; detail lives on
+ * the services, process and sectors pages (see CONTENT-RULES.md).
+ *
+ * @prop services  Joined services from `getServices(locale)`.
+ * @prop sectors   Joined sectors from `getSectors(locale)`.
+ */
+import Icon from '../ui/Icon.astro';
+import Label from '../ui/Label.astro';
+import SectionHeader from '../ui/SectionHeader.astro';
+import Spot from '../ui/illustrations/Spot.astro';
+import { routes, useI18n } from '../../i18n';
+import type { getSectors, getServices } from '../../lib/content';
+import type { IconName } from '../ui/icons';
+
+interface Props {
+  services: Awaited<ReturnType<typeof getServices>>;
+  sectors: Awaited<ReturnType<typeof getSectors>>;
+}
+
+const { services, sectors } = Astro.props;
+const { t, path } = useI18n(Astro.currentLocale);
+const home = t.home;
+const commitmentIcons: IconName[] = ['lock', 'handshake', 'report', 'fileCheck'];
+---
+
+<!-- Services -->
+<section class="section" aria-labelledby="home-services">
+  <div class="container">
+    <SectionHeader
+      label={home.services.label}
+      title={home.services.title}
+      lead={home.services.lead}
+      id="home-services"
+      layout="split"
+    />
+    <ul role="list" class="service-cards">
+      {services.map((service) => (
+        <li class="service-card" data-reveal>
+          <span class="service-card__icon">
+            <Icon name={service.icon} size={24} />
+          </span>
+          <h3>
+            <a href={path(routes.service(service.slug))}>{service.entry.data.title}</a>
+          </h3>
+          <p>{service.entry.data.tagline}</p>
+          <Icon name="arrow" size={20} class="service-card__arrow" />
+        </li>
+      ))}
+    </ul>
+    <a href={path(routes.services)} class="text-link">
+      {home.services.action} <Icon name="arrow" size={18} />
+    </a>
+  </div>
+</section>
+
+<!-- Ransomware: decrypt, then rebuild -->
+<section class="section ransom" aria-labelledby="home-ransom">
+  <div class="container ransom__grid">
+    <div class="ransom__text">
+      <Label tone="alert">{home.ransomware.label}</Label>
+      <h2 id="home-ransom">{home.ransomware.title}</h2>
+      <a href={path(routes.service('ransomware-recovery'))} class="text-link">
+        {home.ransomware.action}
+        <Icon name="arrow" size={18} />
+      </a>
+    </div>
+    <ol role="list" class="ransom__stages">
+      {home.ransomware.stages.map((stage, i) => (
+        <li class:list={['ransom__stage', { 'ransom__stage--second': i === 1 }]}>
+          <Spot name={i === 0 ? 'restore' : 'database'} size={64} />
+          <div>
+            <h3>
+              <span class="ransom__step">{i + 1}</span>
+              {stage.title}
+            </h3>
+            <p>{stage.body}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<!-- Process overview -->
+<section class="section section--tinted" aria-labelledby="home-process">
+  <div class="container container--wide">
+    <SectionHeader
+      label={home.process.label}
+      title={home.process.title}
+      lead={home.process.lead}
+      id="home-process"
+      layout="split"
+    />
+    <div class="steps" data-progress>
+      <span class="steps__track" aria-hidden="true">
+        <span class="steps__fill"></span>
+      </span>
+      <ol role="list" class="steps__list">
+        {t.process.steps.map((step, i) => (
+          <li class="steps__item">
+            <span class="steps__num" aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <h3>{step.title}</h3>
+            <p>{step.summary}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+    <a href={path(routes.process)} class="text-link">
+      {home.process.action} <Icon name="arrow" size={18} />
+    </a>
+  </div>
+</section>
+
+<!-- Commitments -->
+<section class="section" aria-labelledby="home-commitments">
+  <div class="container commit">
+    <SectionHeader label={home.commitments.label} title={home.commitments.title} id="home-commitments" />
+    <ul role="list" class="commit__list">
+      {home.commitments.items.map((item, i) => (
+        <li data-reveal>
+          <Icon name={commitmentIcons[i] ?? 'check'} size={24} />
+          <h3>{item.title}</h3>
+          <p>{item.body}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<!-- Sectors -->
+<section class="section section--ruled" aria-labelledby="home-sectors">
+  <div class="container sectors">
+    <div class="sectors__text">
+      <Label>{home.sectors.label}</Label>
+      <h2 id="home-sectors">{home.sectors.title}</h2>
+      <a href={path(routes.sectors)} class="text-link">
+        {home.sectors.action} <Icon name="arrow" size={18} />
+      </a>
+    </div>
+    <ul role="list" class="sectors__chips">
+      {sectors.map((sector) => (
+        <li>
+          <a href={path(routes.sector(sector.slug))}>
+            <Icon name={sector.icon} size={20} />
+            {sector.entry.data.title}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  @layer components {
+    /* Services */
+    .service-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+      gap: var(--space-s);
+      margin: 0;
+    }
+
+    .service-card {
+      position: relative;
+      display: grid;
+      gap: var(--space-xs);
+      align-content: start;
+      padding: var(--space-m);
+      border: var(--rule);
+      border-radius: var(--radius-l);
+      background: var(--color-surface);
+      transition:
+        border-color var(--duration-s),
+        box-shadow var(--duration-s),
+        translate var(--duration-s);
+    }
+
+    .service-card:hover {
+      border-color: var(--color-accent);
+      box-shadow: var(--shadow-m);
+      translate: 0 -2px;
+    }
+
+    .service-card:focus-within {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 2px;
+    }
+
+    .service-card__icon {
+      display: grid;
+      place-items: center;
+      inline-size: 3rem;
+      block-size: 3rem;
+      border-radius: var(--radius-m);
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+    }
+
+    .service-card h3 {
+      font-size: var(--step-2);
+    }
+
+    .service-card h3 a {
+      text-decoration: none;
+    }
+
+    .service-card h3 a::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+    }
+
+    .service-card h3 a:focus-visible {
+      outline: none;
+    }
+
+    .service-card p {
+      color: var(--color-muted);
+    }
+
+    .service-card :global(.service-card__arrow) {
+      position: absolute;
+      inset-block-start: var(--space-m);
+      inset-inline-end: var(--space-m);
+      color: var(--color-muted);
+    }
+
+    .service-card:hover :global(.service-card__arrow) {
+      color: var(--color-accent);
+    }
+
+    /* Ransomware */
+    .ransom__grid {
+      display: grid;
+      gap: var(--space-xl);
+      align-items: center;
+    }
+
+    @media (width >= 64rem) {
+      .ransom__grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+        gap: var(--space-2xl);
+      }
+    }
+
+    .ransom__text {
+      display: grid;
+      gap: var(--space-s);
+      justify-items: start;
+    }
+
+    .ransom__text .text-link {
+      margin-block-start: 0;
+    }
+
+    .ransom__stages {
+      display: grid;
+      gap: var(--space-s);
+      margin: 0;
+    }
+
+    @media (width >= 40rem) {
+      .ransom__stages {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .ransom__stage {
+      display: grid;
+      gap: var(--space-s);
+      align-content: start;
+      padding: var(--space-m);
+      border: var(--rule);
+      border-radius: var(--radius-l);
+      background: var(--color-surface);
+    }
+
+    .ransom__stage--second {
+      border-color: var(--color-accent);
+      background: var(--color-accent-soft);
+    }
+
+    .ransom__stage h3 {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2xs);
+      font-size: var(--step-2);
+      margin-block-end: var(--space-2xs);
+    }
+
+    .ransom__step {
+      display: inline-grid;
+      place-items: center;
+      inline-size: 1.75rem;
+      block-size: 1.75rem;
+      border-radius: 50%;
+      background: var(--color-text);
+      color: var(--color-bg);
+      font-size: var(--step--1);
+    }
+
+    .ransom__stage p {
+      color: var(--color-muted);
+    }
+
+    /* Steps */
+    .steps {
+      --marker: 3rem;
+
+      position: relative;
+    }
+
+    .steps__list {
+      display: grid;
+      gap: var(--space-l);
+      margin: 0;
+    }
+
+    @media (width >= 56rem) {
+      .steps__list {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .steps__track {
+      display: none;
+    }
+
+    @media (width >= 56rem) {
+      .steps__track {
+        position: absolute;
+        inset-inline: var(--marker) 0;
+        inset-block-start: calc(var(--marker) / 2);
+        display: block;
+        block-size: 2px;
+        background: var(--color-line);
+      }
+
+      .steps__fill {
+        display: block;
+        block-size: 100%;
+        inline-size: calc(var(--progress, 1) * 100%);
+        background: var(--color-accent);
+      }
+
+      :global(.js) .steps {
+        --progress: 0;
+      }
+    }
+
+    .steps__item {
+      position: relative;
+      display: grid;
+      gap: var(--space-2xs);
+      align-content: start;
+    }
+
+    .steps__num {
+      display: grid;
+      place-items: center;
+      inline-size: var(--marker);
+      block-size: var(--marker);
+      margin-block-end: var(--space-2xs);
+      border: 2px solid var(--color-accent);
+      border-radius: 50%;
+      background: var(--color-surface);
+      color: var(--color-accent);
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    .steps__item h3 {
+      font-size: var(--step-3);
+    }
+
+    .steps__item p {
+      color: var(--color-muted);
+    }
+
+    /* Commitments */
+    .commit__list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+      gap: var(--space-l) var(--space-m);
+      margin: 0;
+    }
+
+    .commit__list li {
+      display: grid;
+      gap: var(--space-2xs);
+      align-content: start;
+      padding-block-start: var(--space-m);
+      border-block-start: 2px solid var(--color-text);
+    }
+
+    .commit__list :global(svg) {
+      color: var(--color-accent);
+    }
+
+    .commit__list h3 {
+      font-size: var(--step-2);
+    }
+
+    .commit__list p {
+      color: var(--color-muted);
+    }
+
+    /* Sectors */
+    .sectors {
+      display: grid;
+      gap: var(--space-xl);
+      align-items: center;
+    }
+
+    @media (width >= 64rem) {
+      .sectors {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+        gap: var(--space-2xl);
+      }
+    }
+
+    .sectors__text {
+      display: grid;
+      gap: var(--space-s);
+      justify-items: start;
+    }
+
+    .sectors__text .text-link {
+      margin-block-start: 0;
+    }
+
+    .sectors__chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2xs);
+      margin: 0;
+    }
+
+    .sectors__chips a {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2xs);
+      min-block-size: 3rem;
+      padding-inline: var(--space-s);
+      border: var(--rule);
+      border-radius: var(--radius-pill);
+      background: var(--color-surface);
+      font-weight: 550;
+      text-decoration: none;
+      transition: border-color var(--duration-s);
+    }
+
+    .sectors__chips a:hover {
+      border-color: var(--color-accent);
+    }
+
+    .sectors__chips :global(svg) {
+      color: var(--color-accent);
+    }
+  }
+</style>

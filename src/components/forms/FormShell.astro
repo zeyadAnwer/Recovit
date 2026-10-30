@@ -1,0 +1,114 @@
+---
+/**
+ * FormShell — shared wrapper for public forms: the <form> element posting to
+ * an Astro Action (no-JS fallback via the receipt page), the error summary,
+ * honeypot, locale, optional Turnstile widget, and translated error messages
+ * exposed to the enhancement script as data attributes.
+ *
+ * @prop id        Form id (also the prefix for field ids).
+ * @prop action    Action path, e.g. `path(routes.caseSent) + actions.submitCase`.
+ * @prop kind      "case" or "message" — selects the enhancement behaviour.
+ * @slot default   The form fields and buttons.
+ * @slot receipt   Success panel revealed by the script after submission.
+ */
+import { PUBLIC_TURNSTILE_SITE_KEY } from 'astro:env/client';
+import { site } from '../../config';
+import { useI18n } from '../../i18n';
+
+interface Props {
+  id: string;
+  action: string;
+  kind: 'case' | 'message';
+}
+
+const { id, action, kind } = Astro.props;
+const { locale, t } = useI18n(Astro.currentLocale);
+const errors = t.errors;
+const captcha = site.features.captcha && PUBLIC_TURNSTILE_SITE_KEY;
+---
+
+<div class="form-shell" data-form-root={kind}>
+  <form
+    id={id}
+    method="POST"
+    action={action}
+    class="form-shell__form"
+    data-form={kind}
+    data-msg-required={errors.required}
+    data-msg-too-long={errors.tooLong}
+    data-msg-email={errors.email}
+    data-msg-phone={errors.phone}
+    data-msg-choice={errors.choice}
+    data-msg-consent={errors.consent}
+    data-msg-generic={errors.generic}
+    data-msg-rate-limited={errors.rateLimited}
+    data-msg-captcha={errors.captcha}
+    data-msg-summary={errors.summaryTitle}
+  >
+    <div class="form-shell__summary" role="alert" tabindex="-1" data-error-summary hidden></div>
+
+    <input type="hidden" name="locale" value={locale} />
+    <!-- Honeypot: hidden from people and assistive tech, tempting to bots. -->
+    <div class="form-shell__hp" aria-hidden="true">
+      <label for={`${id}-website`}>Website</label>
+      <input id={`${id}-website`} type="text" name="website" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <slot />
+
+    {captcha && (
+      <>
+        <div
+          class="cf-turnstile form-shell__captcha"
+          data-sitekey={PUBLIC_TURNSTILE_SITE_KEY}
+          data-language={locale}
+          data-theme="auto"
+        />
+        <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+      </>
+    )}
+  </form>
+
+  <div class="form-shell__receipt" data-receipt hidden tabindex="-1">
+    <slot name="receipt" />
+  </div>
+</div>
+
+<style>
+  @layer components {
+    .form-shell__form {
+      display: grid;
+      gap: var(--space-l);
+      container-type: inline-size;
+    }
+
+    .form-shell__summary {
+      padding: var(--space-s) var(--space-m);
+      border: 1px solid var(--color-danger);
+      border-inline-start-width: 4px;
+      background: var(--color-surface);
+      color: var(--color-text);
+    }
+
+    .form-shell__summary :global(ul) {
+      margin-block-start: var(--space-2xs);
+      padding-inline-start: 1.25em;
+    }
+
+    .form-shell__summary :global(a) {
+      color: var(--color-danger);
+    }
+
+    .form-shell__hp {
+      position: absolute;
+      inset-inline-start: -10000px;
+      inline-size: 1px;
+      block-size: 1px;
+      overflow: hidden;
+    }
+
+    .form-shell__receipt:focus {
+      outline: none;
+    }
+  }
+</style>

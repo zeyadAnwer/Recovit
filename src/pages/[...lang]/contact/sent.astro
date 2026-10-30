@@ -1,0 +1,21 @@
+---
+/**
+ * Receipt for the no-JavaScript form submission. Rendered on demand: this is
+ * where the browser posts the form, and Astro runs the action before render.
+ */
+import { actions } from 'astro:actions';
+import ReceiptPage from '../../../components/forms/ReceiptPage.astro';
+import { DEFAULT_LOCALE, isLocale, routes, useI18n } from '../../../i18n';
+
+export const prerender = false;
+
+const { lang } = Astro.params;
+if (lang !== undefined && (!isLocale(lang) || lang === DEFAULT_LOCALE)) {
+  return Astro.rewrite('/404/');
+}
+if (!Astro.getActionResult(actions.sendMessage)) {
+  return Astro.redirect(useI18n(Astro.currentLocale).path(routes.contact), 303);
+}
+---
+
+<ReceiptPage kind="message" />

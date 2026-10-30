@@ -1,0 +1,166 @@
+/* Element defaults. No classes here except `.prose`, the long-form container. */
+
+/* Native cross-document page transitions: zero JavaScript. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 220ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}
+
+html {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 100%;
+  line-height: var(--leading-body);
+  scroll-padding-block-start: calc(var(--header-height) + var(--space-s));
+  hanging-punctuation: first last;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  font-size: var(--step-0);
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  line-height: var(--leading-heading);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-wrap: pretty;
+}
+
+/* Balance only short display headings (≤ 3 lines). Never cap their width:
+   they may span the full column. */
+h1,
+h2 {
+  text-wrap: balance;
+}
+
+:lang(ar) :is(h1, h2, h3, h4) {
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: var(--step-5);
+  line-height: var(--leading-tight);
+  letter-spacing: -0.025em;
+}
+
+h2 {
+  font-size: var(--step-4);
+}
+
+h3 {
+  font-size: var(--step-1);
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-color: var(--color-accent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
+  border-radius: var(--radius-s);
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+hr {
+  border: 0;
+  border-block-start: var(--rule);
+}
+
+code,
+kbd,
+samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* Phone numbers, case IDs and e-mail addresses always read left-to-right. */
+bdi,
+.ltr {
+  unicode-bidi: isolate;
+  direction: ltr;
+}
+
+/* Long-form text (legal pages, service overviews). */
+.prose {
+  max-inline-size: var(--measure);
+}
+
+.prose > * + * {
+  margin-block-start: var(--space-s);
+}
+
+.prose :is(h2, h3) {
+  margin-block-start: var(--space-l);
+}
+
+.prose h2 {
+  font-size: var(--step-2);
+}
+
+.prose h3 {
+  font-size: var(--step-1);
+}
+
+.prose :is(ul, ol) {
+  padding-inline-start: 1.25em;
+}
+
+.prose li + li {
+  margin-block-start: var(--space-3xs);
+}
+
+.prose li::marker {
+  color: var(--color-muted);
+}
+
+.prose a {
+  color: var(--color-secondary);
+}
+
+.prose strong {
+  font-weight: 600;
+}

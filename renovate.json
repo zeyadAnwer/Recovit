@@ -1,0 +1,34 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", ":semanticCommits", ":pinAllExceptPeerDependencies"],
+  "schedule": ["before 6am on monday"],
+  "timezone": "Asia/Riyadh",
+  "minimumReleaseAge": "7 days",
+  "prConcurrentLimit": 4,
+  "lockFileMaintenance": { "enabled": true, "schedule": ["before 6am on the first day of the month"] },
+  "packageRules": [
+    { "groupName": "astro", "matchPackageNames": ["astro", "@astrojs/**"] },
+    {
+      "groupName": "lint and format",
+      "matchPackageNames": [
+        "eslint",
+        "@eslint/**",
+        "typescript-eslint",
+        "eslint-plugin-astro",
+        "globals",
+        "prettier",
+        "prettier-plugin-astro",
+        "stylelint",
+        "stylelint-config-standard",
+        "postcss-html"
+      ]
+    },
+    {
+      "groupName": "testing",
+      "matchPackageNames": ["vitest", "@playwright/test", "@axe-core/playwright", "@lhci/cli"]
+    },
+    { "groupName": "fonts", "matchPackageNames": ["@fontsource/**", "@fontsource-variable/**"] },
+    { "groupName": "github actions", "matchManagers": ["github-actions"] },
+    { "matchUpdateTypes": ["major"], "dependencyDashboardApproval": true }
+  ]
+}

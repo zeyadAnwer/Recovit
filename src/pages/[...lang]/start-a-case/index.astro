@@ -1,0 +1,108 @@
+---
+import PageLayout from '../../../layouts/PageLayout.astro';
+import CaseForm from '../../../components/forms/CaseForm.astro';
+import Icon from '../../../components/ui/Icon.astro';
+import { site } from '../../../config';
+import { localeParams, routes, useI18n, type Locale } from '../../../i18n';
+import { formatPhone, telHref } from '../../../lib/contact';
+
+export const getStaticPaths = () => localeParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const { t, path } = useI18n(locale);
+const emergency = telHref(site.phones.emergency);
+---
+
+<PageLayout
+  title={t.meta.startCase.title}
+  description={t.meta.startCase.description}
+  label={t.caseForm.label}
+  heading={t.caseForm.title}
+  lead={t.caseForm.lead}
+  crumbs={[{ name: t.nav.startCase, href: path(routes.startCase) }]}
+>
+  <div class="container start-case">
+    <div class="start-case__form">
+      <CaseForm />
+    </div>
+    <aside class="start-case__aside">
+      {emergency && (
+        <div class="start-case__urgent">
+          <p class="start-case__urgent-title">{t.common.emergency}</p>
+          <p>{t.emergencyBanner.text}</p>
+          <a href={emergency} class="start-case__phone">
+            <Icon name="call" size={20} />
+            <bdi>{formatPhone(site.phones.emergency)}</bdi>
+          </a>
+        </div>
+      )}
+      <div class="start-case__aid">
+        <Icon name="lock" size={22} />
+        <p>{t.caseForm.privacyNote}</p>
+      </div>
+    </aside>
+  </div>
+</PageLayout>
+
+<script>
+  import '../../../scripts/case-form';
+</script>
+
+<style>
+  @layer components {
+    .start-case {
+      display: grid;
+      gap: var(--space-xl);
+      padding-block: var(--space-xl);
+    }
+
+    @media (width >= 64rem) {
+      .start-case {
+        grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+        gap: var(--space-2xl);
+      }
+
+      .start-case__aside {
+        position: sticky;
+        inset-block-start: calc(var(--header-height) + var(--space-m));
+        align-self: start;
+      }
+    }
+
+    .start-case__aside {
+      display: grid;
+      gap: var(--space-m);
+      align-content: start;
+    }
+
+    .start-case__urgent,
+    .start-case__aid {
+      padding: var(--space-m);
+      border: var(--rule-strong);
+      background: var(--color-surface);
+      display: grid;
+      gap: var(--space-2xs);
+      font-size: var(--step--1);
+    }
+
+    .start-case__urgent {
+      border-color: var(--color-secondary);
+    }
+
+    .start-case__urgent-title,
+    .start-case__aid-title {
+      font-weight: 600;
+      font-size: var(--step-0);
+    }
+
+    .start-case__phone {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2xs);
+      min-block-size: var(--target);
+      font-weight: 600;
+      font-size: var(--step-1);
+      color: var(--color-secondary);
+    }
+  }
+</style>

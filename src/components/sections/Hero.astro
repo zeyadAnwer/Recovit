@@ -1,0 +1,499 @@
+---
+/**
+ * Hero — headline, one supporting line, two actions and a trust row (only
+ * claims confirmed in the launch checklist; response time appears once it is
+ * filled in site.config.ts). Beside it, the "incident console": encrypted
+ * file tiles resolve into restored files while the phase rail moves through
+ * contain → investigate → recover. Pure CSS animation, decorative
+ * (aria-hidden), shown in its final state under prefers-reduced-motion.
+ */
+import Icon from '../ui/Icon.astro';
+import { filled, site } from '../../config';
+import { pick, routes, useI18n } from '../../i18n';
+import { telHref } from '../../lib/contact';
+
+const { locale, t, path } = useI18n(Astro.currentLocale);
+const hero = t.home.hero;
+const emergency = telHref(site.phones.emergency);
+const responseTime = filled(pick(site.responseTime, locale));
+const trust = [hero.trust.nda, hero.trust.report, ...(responseTime ? [responseTime] : [])];
+const tiles = Array.from({ length: 12 }, (_, i) => i);
+---
+
+<section class="hero" aria-labelledby="hero-title">
+  <div class="container container--wide hero__grid">
+    <div class="hero__text">
+      <p class="hero__badge">
+        <span class="hero__dot" aria-hidden="true"></span>
+        {hero.label}
+      </p>
+      <h1 id="hero-title">{hero.title}</h1>
+      <p class="hero__lead">{hero.lead}</p>
+      <div class="hero__actions">
+        <a href={path(routes.startCase)} class="hero__primary">
+          {t.cta.startCase}
+          <Icon name="arrow" size={18} />
+        </a>
+        <a href={emergency ?? path(routes.contact)} class="hero__secondary">
+          <Icon name="call" size={18} />
+          {t.cta.callEmergency}
+        </a>
+      </div>
+      <ul role="list" class="hero__trust">
+        {trust.map((item) => (
+          <li>
+            <Icon name="check" size={18} />
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    <div class="console" aria-hidden="true">
+      <div class="console__head">
+        <span class="console__title">{hero.console.title}</span>
+        <span class="console__tag">{t.common.illustration}</span>
+      </div>
+      <ol class="console__phases">
+        {hero.console.phases.map((phase) => (
+          <li>{phase}</li>
+        ))}
+      </ol>
+      <div class="console__bar">
+        <span></span>
+      </div>
+      <div class="console__grid">
+        {tiles.map((i) => (
+          <span class={`tile tile--${i}`}>
+            <span class="tile__locked" />
+            <span class="tile__restored" />
+          </span>
+        ))}
+      </div>
+      <div class="console__status">
+        <span class="console__state console__state--locked">{hero.console.locked}</span>
+        <span class="console__state console__state--restored">
+          <Icon name="check" size={16} />
+          {hero.console.restored}
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  @layer components {
+    .hero {
+      padding-block: var(--space-xl) var(--space-2xl);
+    }
+
+    .hero__grid {
+      display: grid;
+      gap: var(--space-xl);
+      align-items: center;
+    }
+
+    @media (width >= 64rem) {
+      .hero__grid {
+        grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+        gap: var(--space-2xl);
+      }
+    }
+
+    .hero__text {
+      display: grid;
+      gap: var(--space-m);
+      justify-items: start;
+    }
+
+    .hero__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2xs);
+      padding: var(--space-3xs) var(--space-xs);
+      border: var(--rule);
+      border-radius: var(--radius-pill);
+      background: var(--color-surface);
+      font-size: var(--step--1);
+      font-weight: 600;
+    }
+
+    .hero__dot {
+      inline-size: 0.5rem;
+      block-size: 0.5rem;
+      border-radius: 50%;
+      background: var(--color-accent);
+      box-shadow: 0 0 0 4px var(--color-accent-soft);
+    }
+
+    .hero h1 {
+      font-size: var(--step-6);
+    }
+
+    :global(:lang(ar)) .hero h1 {
+      font-size: var(--step-5);
+    }
+
+    .hero__lead {
+      font-size: var(--step-2);
+      line-height: 1.5;
+      color: var(--color-muted);
+    }
+
+    .hero__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+    }
+
+    .hero__primary,
+    .hero__secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2xs);
+      min-block-size: 3.25rem;
+      padding-inline: var(--space-m);
+      border-radius: var(--radius-pill);
+      font-weight: 650;
+      text-decoration: none;
+      transition:
+        background-color var(--duration-s),
+        border-color var(--duration-s);
+    }
+
+    .hero__primary {
+      background: var(--color-accent);
+      color: var(--color-on-accent);
+    }
+
+    .hero__primary:hover {
+      background: color-mix(in srgb, var(--color-accent) 85%, var(--color-text));
+    }
+
+    .hero__secondary {
+      border: var(--rule-strong);
+      color: var(--color-text);
+    }
+
+    .hero__secondary:hover {
+      border-color: var(--color-text);
+    }
+
+    .hero__secondary :global(svg) {
+      color: var(--color-alert);
+    }
+
+    .hero__trust {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2xs) var(--space-m);
+      margin: 0;
+      padding-block-start: var(--space-s);
+      border-block-start: var(--rule);
+      color: var(--color-muted);
+      font-size: var(--step--1);
+      font-weight: 500;
+    }
+
+    .hero__trust li {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2xs);
+    }
+
+    .hero__trust :global(svg) {
+      color: var(--color-accent);
+    }
+
+    /* Incident console */
+    .console {
+      --cycle: 7s;
+
+      display: grid;
+      gap: var(--space-s);
+      padding: var(--space-m);
+      border-radius: var(--radius-l);
+      background: var(--color-band);
+      color: var(--color-band-text);
+      box-shadow: var(--shadow-m);
+      font-size: var(--step--1);
+    }
+
+    .console__head {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: var(--step--2);
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+      color: var(--color-band-muted);
+    }
+
+    .console__tag {
+      padding-inline: 0.5rem;
+      border: 1px solid var(--color-band-line);
+      border-radius: var(--radius-pill);
+    }
+
+    .console__phases {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-2xs);
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-weight: 600;
+    }
+
+    .console__phases li {
+      padding: var(--space-2xs);
+      border: 1px solid var(--color-band-line);
+      border-radius: var(--radius-s);
+      text-align: center;
+      color: var(--color-band-muted);
+      animation: phase var(--cycle) var(--ease-out) both;
+    }
+
+    .console__phases li:nth-child(2) {
+      animation-delay: calc(var(--cycle) * 0.25);
+    }
+
+    .console__phases li:nth-child(3) {
+      animation-delay: calc(var(--cycle) * 0.5);
+      animation-name: phase-last;
+    }
+
+    .console__bar {
+      block-size: 4px;
+      border-radius: var(--radius-pill);
+      background: var(--color-band-line);
+      overflow: hidden;
+    }
+
+    .console__bar span {
+      display: block;
+      block-size: 100%;
+      inline-size: 100%;
+      background: var(--color-accent);
+      transform-origin: left;
+      animation: bar var(--cycle) linear both;
+    }
+
+    :global([dir='rtl']) .console__bar span {
+      transform-origin: right;
+    }
+
+    .console__grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: var(--space-2xs);
+    }
+
+    .tile {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: var(--radius-s);
+      overflow: hidden;
+    }
+
+    .tile__locked,
+    .tile__restored {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+    }
+
+    .tile__locked {
+      border: 1px solid color-mix(in srgb, var(--brand-alert) 60%, transparent);
+      background: repeating-linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--brand-alert) 30%, transparent) 0 4px,
+        transparent 4px 9px
+      );
+    }
+
+    .tile__restored {
+      border: 1px solid var(--color-accent);
+      background:
+        linear-gradient(var(--color-band-muted) 0 0) 22% 30% / 56% 2px no-repeat,
+        linear-gradient(var(--color-band-muted) 0 0) 22% 45% / 56% 2px no-repeat,
+        linear-gradient(var(--color-band-muted) 0 0) 22% 60% / 36% 2px no-repeat,
+        color-mix(in srgb, var(--color-accent) 22%, var(--color-band));
+      opacity: 0;
+      animation: restore var(--cycle) var(--ease-out) both;
+      animation-delay: calc(var(--cycle) * 0.5 + var(--i) * 0.12s);
+    }
+
+    .tile--0 {
+      --i: 0;
+    }
+
+    .tile--1 {
+      --i: 5;
+    }
+
+    .tile--2 {
+      --i: 2;
+    }
+
+    .tile--3 {
+      --i: 8;
+    }
+
+    .tile--4 {
+      --i: 3;
+    }
+
+    .tile--5 {
+      --i: 10;
+    }
+
+    .tile--6 {
+      --i: 1;
+    }
+
+    .tile--7 {
+      --i: 6;
+    }
+
+    .tile--8 {
+      --i: 9;
+    }
+
+    .tile--9 {
+      --i: 4;
+    }
+
+    .tile--10 {
+      --i: 11;
+    }
+
+    .tile--11 {
+      --i: 7;
+    }
+
+    .console__status {
+      display: grid;
+      font-weight: 600;
+    }
+
+    .console__state {
+      grid-area: 1 / 1;
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2xs);
+    }
+
+    .console__state--locked {
+      color: color-mix(in srgb, var(--brand-alert) 70%, var(--color-band-text));
+      animation: fade-out var(--cycle) both;
+    }
+
+    .console__state--restored {
+      color: var(--color-band-accent);
+      animation: fade-in var(--cycle) both;
+    }
+
+    :global([data-theme='dark']) .console {
+      border: var(--rule);
+    }
+
+    @keyframes phase {
+      0%,
+      100% {
+        color: var(--color-band-muted);
+      }
+
+      2%,
+      25% {
+        color: var(--color-band-text);
+        border-color: var(--color-band-text);
+      }
+
+      27% {
+        color: var(--color-band-muted);
+      }
+    }
+
+    @keyframes phase-last {
+      0% {
+        color: var(--color-band-muted);
+      }
+
+      2%,
+      100% {
+        color: var(--color-band-text);
+        border-color: var(--color-accent);
+        background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+      }
+    }
+
+    @keyframes bar {
+      from {
+        transform: scaleX(0);
+      }
+
+      to {
+        transform: scaleX(1);
+      }
+    }
+
+    @keyframes restore {
+      0% {
+        opacity: 0;
+      }
+
+      8%,
+      100% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fade-out {
+      0%,
+      85% {
+        opacity: 1;
+      }
+
+      90%,
+      100% {
+        opacity: 0;
+      }
+    }
+
+    @keyframes fade-in {
+      0%,
+      88% {
+        opacity: 0;
+      }
+
+      95%,
+      100% {
+        opacity: 1;
+      }
+    }
+
+    /* Reduced motion: no animation, the console shows its final state. */
+    @media (prefers-reduced-motion: reduce) {
+      .console *,
+      .console__phases li {
+        animation: none !important;
+      }
+
+      .tile__restored,
+      .console__state--restored {
+        opacity: 1;
+      }
+
+      .tile__locked,
+      .console__state--locked {
+        opacity: 0;
+      }
+
+      .console__phases li:nth-child(3) {
+        color: var(--color-band-text);
+        border-color: var(--color-accent);
+      }
+    }
+  }
+</style>

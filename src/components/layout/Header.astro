@@ -1,0 +1,378 @@
+---
+/**
+ * Header — slim sticky bar. Compacts after scrolling (data-scrolled, set by
+ * scripts/header.ts). Holds the logo lockup, primary navigation with a
+ * Services mega menu (native popover: no JS, Esc and outside-click close),
+ * grouped language/theme switches, the always-visible incident action and,
+ * on small screens, the full-height mobile menu.
+ */
+import Icon from '../ui/Icon.astro';
+import Logo from '../ui/Logo.astro';
+import LanguageSwitch from './LanguageSwitch.astro';
+import MobileNav from './MobileNav.astro';
+import ThemeToggle from './ThemeToggle.astro';
+import { isCurrent, primaryNav } from './nav';
+import { site } from '../../config';
+import { routes, useI18n } from '../../i18n';
+import { telHref } from '../../lib/contact';
+import { getServices } from '../../lib/content';
+
+const { locale, t, path } = useI18n(Astro.currentLocale);
+const pathname = Astro.url.pathname;
+const services = await getServices(locale);
+const phone = telHref(site.phones.emergency);
+const incidentHref = phone ?? path(routes.startCase);
+const incidentLabel = phone ? t.cta.incident : `${t.cta.incidentShort} ${t.cta.startCase}`;
+const secondaryNav = primaryNav.filter((item) => item.key !== 'services');
+---
+
+<header class="site-header" data-header>
+  <div class="container container--wide site-header__inner">
+    <a href={path(routes.home)} class="site-header__logo">
+      <Logo />
+    </a>
+
+    <nav class="site-header__nav" aria-label={t.a11y.mainNav}>
+      <ul role="list">
+        <li class="site-header__services">
+          <a
+            href={path(routes.services)}
+            aria-current={isCurrent(pathname, routes.services) ? 'page' : undefined}
+          >
+            {t.nav.services}
+          </a>
+          <button
+            type="button"
+            class="site-header__menu-toggle"
+            popovertarget="services-menu"
+            aria-label={t.a11y.servicesMenu}
+          >
+            <Icon name="chevronDown" size={16} class="site-header__chevron" />
+          </button>
+        </li>
+        {secondaryNav.map((item) => (
+          <li>
+            <a href={path(item.href)} aria-current={isCurrent(pathname, item.href) ? 'page' : undefined}>
+              {t.nav[item.key]}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="site-header__tools">
+      <div class="site-header__switches">
+        <LanguageSwitch />
+        <span class="site-header__divider" aria-hidden="true"></span>
+        <ThemeToggle />
+      </div>
+      <a href={incidentHref} class="site-header__incident" data-emergency-link>
+        <Icon name="call" size={18} />
+        <span class="site-header__incident-long">{incidentLabel}</span>
+        <span class="site-header__incident-short">{t.cta.incidentShort}</span>
+      </a>
+      <MobileNav services={services} />
+    </div>
+  </div>
+
+  <div id="services-menu" class="mega" popover>
+    <div class="mega__inner">
+      <ul role="list" class="mega__list">
+        {services.map((service) => (
+          <li>
+            <a href={path(routes.service(service.slug))} class="mega__item">
+              <span class="mega__icon">
+                <Icon name={service.icon} size={22} />
+              </span>
+              <span class="mega__text">
+                <span class="mega__title">{service.entry.data.title}</span>
+                <span class="mega__desc">{service.entry.data.tagline}</span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <div class="mega__footer">
+        <a href={path(routes.services)} class="mega__all">
+          {t.nav.allServices}
+          <Icon name="arrow" size={18} />
+        </a>
+        <a href={path(routes.startCase)} class="mega__all">
+          {t.nav.startCase}
+          <Icon name="arrow" size={18} />
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  import '../../scripts/header';
+</script>
+
+<style>
+  @layer components {
+    .site-header {
+      position: sticky;
+      inset-block-start: 0;
+      z-index: 50;
+      background: var(--color-bg);
+      border-block-end: 1px solid transparent;
+      transition:
+        background-color var(--duration-m),
+        border-color var(--duration-m);
+    }
+
+    .site-header[data-scrolled] {
+      background: color-mix(in srgb, var(--color-bg) 86%, transparent);
+      backdrop-filter: saturate(1.4) blur(10px);
+      border-block-end-color: var(--color-line);
+    }
+
+    .site-header__inner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-m);
+      min-block-size: var(--header-height);
+      transition: min-block-size var(--duration-m) var(--ease-out);
+    }
+
+    .site-header[data-scrolled] .site-header__inner {
+      min-block-size: var(--header-height-compact);
+    }
+
+    .site-header__logo {
+      display: inline-flex;
+      align-items: center;
+      min-block-size: var(--target);
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .site-header__nav {
+      display: none;
+    }
+
+    .site-header__nav ul {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3xs);
+      margin: 0;
+    }
+
+    .site-header__nav a {
+      display: inline-flex;
+      align-items: center;
+      min-block-size: var(--target);
+      padding-inline: var(--space-xs);
+      border-radius: var(--radius-s);
+      text-decoration: none;
+      font-size: var(--step--1);
+      font-weight: 550;
+      color: var(--color-muted);
+    }
+
+    .site-header__nav a:hover {
+      color: var(--color-text);
+      background: var(--color-surface);
+    }
+
+    .site-header__nav a[aria-current='page'] {
+      color: var(--color-text);
+      box-shadow: inset 0 -2px 0 var(--color-accent);
+    }
+
+    .site-header__services {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .site-header__services a {
+      padding-inline-end: var(--space-3xs);
+    }
+
+    .site-header__menu-toggle {
+      display: inline-grid;
+      place-items: center;
+      inline-size: 2rem;
+      block-size: var(--target);
+      border: 0;
+      border-radius: var(--radius-s);
+      background: transparent;
+      color: var(--color-muted);
+    }
+
+    .site-header__menu-toggle:hover {
+      color: var(--color-text);
+      background: var(--color-surface);
+    }
+
+    .site-header__menu-toggle :global(.site-header__chevron) {
+      transition: rotate var(--duration-s);
+    }
+
+    .site-header:has(#services-menu:popover-open) :global(.site-header__chevron) {
+      rotate: 180deg;
+    }
+
+    .site-header__tools {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2xs);
+      margin-inline-start: auto;
+    }
+
+    .site-header__switches {
+      display: none;
+      align-items: center;
+      gap: var(--space-3xs);
+      padding-inline: var(--space-2xs) var(--space-3xs);
+      border: var(--rule);
+      border-radius: var(--radius-pill);
+    }
+
+    .site-header__divider {
+      inline-size: 1px;
+      block-size: 1.25rem;
+      background: var(--color-line);
+    }
+
+    .site-header__incident {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2xs);
+      min-block-size: var(--target);
+      padding-inline: var(--space-s);
+      border-radius: var(--radius-pill);
+      background: var(--color-alert);
+      color: var(--color-on-alert);
+      font-weight: 650;
+      font-size: var(--step--1);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background-color var(--duration-s);
+    }
+
+    .site-header__incident:hover {
+      background: color-mix(in srgb, var(--color-alert) 85%, var(--color-text));
+    }
+
+    .site-header__incident-long {
+      display: none;
+    }
+
+    @media (width >= 30rem) {
+      .site-header__incident-long {
+        display: inline;
+      }
+
+      .site-header__incident-short {
+        display: none;
+      }
+    }
+
+    @media (width >= 48rem) {
+      .site-header__switches {
+        display: inline-flex;
+      }
+    }
+
+    @media (width >= 68rem) {
+      .site-header__nav {
+        display: block;
+      }
+    }
+
+    /* Services mega menu */
+    .mega {
+      position: fixed;
+      inset: calc(var(--header-height) + var(--space-2xs)) 0 auto;
+      inline-size: min(var(--page-wide), 100vw - 2 * var(--gutter));
+      max-block-size: calc(100dvh - var(--header-height) - var(--space-l));
+      margin: 0 auto;
+      padding: 0;
+      border: var(--rule);
+      border-radius: var(--radius-l);
+      background: var(--color-surface);
+      color: var(--color-text);
+      box-shadow: var(--shadow-m);
+      overflow: auto;
+    }
+
+    .mega__inner {
+      display: grid;
+      gap: var(--space-m);
+      padding: var(--space-m);
+    }
+
+    .mega__list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+      gap: var(--space-2xs);
+      margin: 0;
+    }
+
+    .mega__item {
+      display: flex;
+      gap: var(--space-s);
+      align-items: flex-start;
+      padding: var(--space-s);
+      border-radius: var(--radius-m);
+      text-decoration: none;
+      transition: background-color var(--duration-s);
+    }
+
+    .mega__item:hover {
+      background: var(--color-accent-soft);
+    }
+
+    .mega__icon {
+      display: grid;
+      place-items: center;
+      inline-size: 2.5rem;
+      block-size: 2.5rem;
+      flex-shrink: 0;
+      border-radius: var(--radius-m);
+      background: var(--color-accent-soft);
+      color: var(--color-accent);
+    }
+
+    .mega__text {
+      display: grid;
+      gap: var(--space-3xs);
+    }
+
+    .mega__title {
+      font-weight: 650;
+    }
+
+    .mega__desc {
+      font-size: var(--step--1);
+      color: var(--color-muted);
+      line-height: 1.45;
+    }
+
+    .mega__footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: var(--space-s);
+      padding-block-start: var(--space-s);
+      border-block-start: var(--rule);
+    }
+
+    .mega__all {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2xs);
+      min-block-size: var(--target);
+      font-weight: 600;
+      color: var(--color-secondary);
+      text-decoration: none;
+    }
+
+    .mega__all:hover {
+      text-decoration: underline;
+    }
+  }
+</style>

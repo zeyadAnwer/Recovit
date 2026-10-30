@@ -1,0 +1,60 @@
+---
+/**
+ * ThemeToggle — switches light/dark and remembers the choice. Rendered hidden
+ * and revealed by its script, so visitors without JavaScript never see a
+ * button that does nothing. The initial theme is applied in BaseLayout's head.
+ */
+import Icon from '../ui/Icon.astro';
+import { useI18n } from '../../i18n';
+
+const { t } = useI18n(Astro.currentLocale);
+---
+
+<button
+  type="button"
+  class="theme-toggle"
+  data-theme-toggle
+  aria-label={t.a11y.themeDark}
+  aria-pressed="false"
+  hidden
+>
+  <Icon name="moon" class="theme-toggle__moon" />
+  <Icon name="sun" class="theme-toggle__sun" />
+</button>
+
+<script>
+  import { initThemeToggle } from '../../scripts/theme';
+  initThemeToggle();
+</script>
+
+<style>
+  @layer components {
+    .theme-toggle {
+      display: inline-grid;
+      place-items: center;
+      inline-size: var(--target);
+      block-size: var(--target);
+      border: 1px solid transparent;
+      border-radius: var(--radius-m);
+      background: transparent;
+      color: var(--color-text);
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--color-line-strong);
+    }
+
+    .theme-toggle :global(svg) {
+      grid-area: 1 / 1;
+    }
+
+    .theme-toggle :global(.theme-toggle__sun),
+    :global([data-theme='dark']) .theme-toggle :global(.theme-toggle__moon) {
+      display: none;
+    }
+
+    :global([data-theme='dark']) .theme-toggle :global(.theme-toggle__sun) {
+      display: block;
+    }
+  }
+</style>

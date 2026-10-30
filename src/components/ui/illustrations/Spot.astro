@@ -1,0 +1,91 @@
+---
+/**
+ * Spot — the illustration set for Recovik's work. Drawn on a 64 × 64 grid
+ * with the same pen as the icons (rounded caps and joins, 3px corner radius).
+ * Accent marks what is restored; alert marks the threat. Decorative unless
+ * `label` is given.
+ *
+ * @prop name   Illustration name.
+ * @prop label  Accessible description; omit for decorative use.
+ * @prop size   Rendered size in px. Default 96.
+ */
+import type { SpotName } from './spots';
+
+const drawings: Record<SpotName, string> = {
+  isolate: `<rect x="6" y="14" width="18" height="14" rx="3"/><rect x="40" y="36" width="18" height="14" rx="3"/>
+    <path d="M15 28v8h9M49 36v-8h-9"/><path class="alert" d="M28 36l8-8M27.5 28.5l9 9" />`,
+  timeline: `<path d="M6 40h52"/><circle cx="12" cy="40" r="3.5"/><circle cx="26" cy="40" r="3.5"/><circle cx="40" cy="40" r="3.5"/>
+    <circle class="accent-fill" cx="54" cy="40" r="3.5"/><path d="M12 36.5V22h12M40 36.5V18h14"/><path d="M26 43.5V52h10"/>
+    <rect x="24" y="16" width="10" height="10" rx="3"/><path class="alert" d="M14 22l4 0"/>`,
+  restore: `<path d="M6 10h13l7 7v29a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3z"/><path class="alert" d="M11 26h10M11 32h10M11 38h6"/>
+    <rect class="alert" x="10" y="42" width="8" height="5" rx="1.5"/>
+    <path class="accent" d="M30 30h8m-3-3l3 3-3 3"/>
+    <path d="M42 10h13l7 7v29a3 3 0 0 1-3 3H45a3 3 0 0 1-3-3z"/><path class="accent" d="M47 30l4 4 7-8"/>`,
+  recoverDeleted: `<path class="faint" d="M10 8h14l7 7v27a3 3 0 0 1-3 3H13a3 3 0 0 1-3-3z"/>
+    <path d="M26 18h14l7 7v27a3 3 0 0 1-3 3H29a3 3 0 0 1-3-3z"/><path d="M32 34h9M32 40h9M32 46h5"/>
+    <path class="accent" d="M18 52a12 12 0 0 0 4 5.5M18 52l-1.5 4.5M18 52l4.5 1"/>`,
+  database: `<ellipse cx="32" cy="14" rx="18" ry="6"/><path d="M14 14v34c0 3.3 8 6 18 6s18-2.7 18-6V14"/>
+    <path d="M14 26c0 3.3 8 6 18 6s18-2.7 18-6"/><path class="accent" d="M14 37c0 3.3 8 6 18 6s18-2.7 18-6"/>
+    <path class="accent" d="M24 47.5l4 4 9-9"/>`,
+  cloud: `<path d="M18 44h28a10 10 0 0 0 1.3-19.9A15 15 0 0 0 18.1 20.6 12 12 0 0 0 18 44z"/>
+    <path class="accent" d="M26 34l5 5 9-10"/><path d="M24 52h16M32 44v8"/>`,
+  harden: `<path d="M8 16h48M8 28h48M8 40h48M8 52h48"/><path d="M20 16v12M44 16v12M32 28v12M14 40v12M50 40v12"/>
+    <rect class="accent-soft" x="20" y="28" width="12" height="12" rx="1"/><path class="accent" d="M32 4v8M28 8l4 4 4-4"/>`,
+};
+
+interface Props {
+  name: SpotName;
+  label?: string;
+  size?: number;
+  class?: string;
+}
+
+const { name, label, size = 96, class: className } = Astro.props;
+---
+
+<svg
+  class:list={['spot', className]}
+  viewBox="0 0 64 64"
+  width={size}
+  height={size}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : 'true'}
+  set:html={drawings[name]}
+/>
+
+<style>
+  @layer components {
+    .spot {
+      fill: none;
+      stroke: currentcolor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      color: var(--color-text);
+    }
+
+    .spot :global(.accent) {
+      stroke: var(--color-accent);
+    }
+
+    .spot :global(.accent-fill) {
+      fill: var(--color-accent);
+      stroke: var(--color-accent);
+    }
+
+    .spot :global(.accent-soft) {
+      fill: var(--color-accent-soft);
+      stroke: var(--color-accent);
+    }
+
+    .spot :global(.alert) {
+      stroke: var(--color-alert);
+    }
+
+    .spot :global(.faint) {
+      stroke-dasharray: 3 4;
+      opacity: 0.6;
+    }
+  }
+</style>

@@ -1,0 +1,171 @@
+---
+/**
+ * ChoiceGroup — a fieldset of radio options rendered as large tappable rows.
+ *
+ * @prop name     Radio group name.
+ * @prop legend   Question text (the fieldset legend).
+ * @prop options  `{ value, label, hint?, icon? }[]`.
+ * @prop required Require a choice.
+ * @prop columns  Columns on wide screens (1–2). Default 2.
+ * @prop error    Error message to show initially.
+ * @prop formId   Id prefix.
+ */
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+
+interface Option {
+  value: string;
+  label: string;
+  hint?: string;
+  icon?: IconName;
+}
+
+interface Props {
+  name: string;
+  legend: string;
+  options: Option[];
+  required?: boolean;
+  columns?: 1 | 2;
+  error?: string | undefined;
+  formId: string;
+}
+
+const { name, legend, options, required = false, columns = 2, error, formId } = Astro.props;
+const errorId = `${formId}-${name}-error`;
+---
+
+<fieldset
+  class:list={['choice-group', `choice-group--${columns}`]}
+  aria-describedby={errorId}
+  data-field-wrapper={name}
+  aria-invalid={error ? 'true' : undefined}
+>
+  <legend class="choice-group__legend">{legend}</legend>
+  <div class="choice-group__options">
+    {options.map((option) => {
+      const id = `${formId}-${name}-${option.value}`;
+      return (
+        <label class="choice" for={id}>
+          <input
+            type="radio"
+            id={id}
+            name={name}
+            value={option.value}
+            required={required}
+            data-field={name}
+            class="choice__input"
+          />
+          <span class="choice__box">
+            {option.icon && <Icon name={option.icon} size={22} />}
+            <span class="choice__text">
+              <span class="choice__label">{option.label}</span>
+              {option.hint && <span class="choice__hint">{option.hint}</span>}
+            </span>
+          </span>
+        </label>
+      );
+    })}
+  </div>
+  <p id={errorId} class="choice-group__error" data-error-for={name} aria-live="polite">
+    {error}
+  </p>
+</fieldset>
+
+<style>
+  @layer components {
+    .choice-group {
+      border: 0;
+      padding: 0;
+      min-inline-size: 0;
+    }
+
+    .choice-group__legend {
+      font-weight: 600;
+      margin-block-end: var(--space-xs);
+      padding: 0;
+    }
+
+    .choice-group__options {
+      display: grid;
+      gap: var(--space-2xs);
+    }
+
+    @container (min-width: 34rem) {
+      .choice-group--2 .choice-group__options {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .choice {
+      position: relative;
+      display: block;
+      cursor: pointer;
+    }
+
+    .choice__input {
+      position: absolute;
+      opacity: 0;
+      inset-block-start: 50%;
+      inset-inline-start: 1rem;
+      margin: 0;
+    }
+
+    .choice__box {
+      display: flex;
+      align-items: center;
+      gap: var(--space-xs);
+      min-block-size: 3.25rem;
+      padding: var(--space-xs) var(--space-s);
+      border: 1px solid var(--color-line-strong);
+      border-radius: var(--radius-m);
+      background: var(--color-surface);
+      transition:
+        border-color var(--duration-s),
+        background-color var(--duration-s);
+    }
+
+    .choice:hover .choice__box {
+      border-color: var(--color-text);
+    }
+
+    .choice__input:focus-visible + .choice__box {
+      outline: 2px solid var(--color-focus);
+      outline-offset: 2px;
+    }
+
+    .choice__input:checked + .choice__box {
+      border-color: var(--color-secondary);
+      background: var(--color-secondary-soft);
+      box-shadow: inset 3px 0 0 var(--color-secondary);
+    }
+
+    :global([dir='rtl']) .choice__input:checked + .choice__box {
+      box-shadow: inset -3px 0 0 var(--color-secondary);
+    }
+
+    .choice__text {
+      display: grid;
+    }
+
+    .choice__label {
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    .choice__hint {
+      font-size: var(--step--1);
+      color: var(--color-muted);
+    }
+
+    .choice-group__error {
+      margin-block-start: var(--space-2xs);
+      color: var(--color-danger);
+      font-size: var(--step--1);
+      font-weight: 500;
+    }
+
+    .choice-group__error:empty {
+      display: none;
+    }
+  }
+</style>

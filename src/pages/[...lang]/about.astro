@@ -1,0 +1,137 @@
+---
+import PageLayout from '../../layouts/PageLayout.astro';
+import ContentPlaceholder from '../../components/ui/ContentPlaceholder.astro';
+import PhotoPlaceholder from '../../components/ui/PhotoPlaceholder.astro';
+import Spot from '../../components/ui/illustrations/Spot.astro';
+import Stats from '../../components/sections/Stats.astro';
+import { localeParams, routes, useI18n, type Locale } from '../../i18n';
+
+export const getStaticPaths = () => localeParams();
+
+const { locale } = Astro.props as { locale: Locale };
+const { t, path } = useI18n(locale);
+const about = t.about;
+---
+
+<PageLayout
+  title={t.meta.about.title}
+  description={t.meta.about.description}
+  label={about.label}
+  heading={about.title}
+  lead={about.lead}
+  crumbs={[{ name: t.nav.about, href: path(routes.about) }]}
+>
+  <Spot slot="aside" name="harden" size={168} />
+
+  <section class="section" aria-labelledby="story-title">
+    <div class="container about-story">
+      <div class="about-story__text">
+        <h2 id="story-title">{about.storyTitle}</h2>
+        <ContentPlaceholder
+          token="ABOUT_STORY"
+          hint="2–4 sentences: when Recovik started, who founded it and why it focuses on cyber incidents. Facts only."
+        />
+      </div>
+      <PhotoPlaceholder subject="incident response team at work" ratio="16 / 9" />
+    </div>
+  </section>
+
+  <Stats />
+
+  <section class="section section--tinted" aria-labelledby="approach-title">
+    <div class="container">
+      <h2 id="approach-title" class="about-h2">
+        {about.approachTitle}
+      </h2>
+      <ol role="list" class="approach">
+        {about.approach.map((item, i) => (
+          <li data-reveal>
+            <span class="approach__num" aria-hidden="true">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="team-title">
+    <div class="container about-team">
+      <h2 id="team-title" class="about-h2">
+        {about.teamTitle}
+      </h2>
+      <ContentPlaceholder
+        token="ABOUT_TEAM"
+        hint="Names, roles and relevant certifications of the incident leads — only with each person's permission."
+      />
+    </div>
+  </section>
+</PageLayout>
+
+<style>
+  @layer components {
+    .about-h2 {
+      margin-block-end: var(--space-l);
+      font-size: var(--step-4);
+    }
+
+    .about-story {
+      display: grid;
+      gap: var(--space-xl);
+      align-items: center;
+    }
+
+    @media (width >= 60rem) {
+      .about-story {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-2xl);
+      }
+    }
+
+    .about-story__text {
+      display: grid;
+      gap: var(--space-m);
+    }
+
+    .about-story__text h2 {
+      font-size: var(--step-4);
+    }
+
+    .approach {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+      gap: var(--space-m);
+      margin: 0;
+    }
+
+    .approach li {
+      display: grid;
+      gap: var(--space-2xs);
+      align-content: start;
+      padding: var(--space-m);
+      border: var(--rule);
+      border-radius: var(--radius-l);
+      background: var(--color-bg);
+    }
+
+    .approach__num {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--color-accent);
+    }
+
+    .approach h3 {
+      font-size: var(--step-2);
+    }
+
+    .approach p {
+      color: var(--color-muted);
+    }
+
+    .about-team {
+      display: grid;
+    }
+  }
+</style>

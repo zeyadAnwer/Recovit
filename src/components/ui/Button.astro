@@ -1,0 +1,137 @@
+---
+/**
+ * Button — a link or a <button> with the house styles.
+ *
+ * @prop href     When set, renders an <a>; otherwise a <button>.
+ * @prop variant  "primary" (amber, one per view), "secondary" (outlined),
+ *                "quiet" (text-only with arrow). Default "primary".
+ * @prop icon     Optional leading icon.
+ * @prop arrow    Show a trailing directional arrow.
+ * @prop type     Button type when rendering a <button>. Default "button".
+ * @prop size     "m" (default) or "s".
+ * Other attributes (data-*, aria-*, name, value…) are passed through.
+ */
+import type { HTMLAttributes } from 'astro/types';
+import Icon from './Icon.astro';
+import type { IconName } from './icons';
+
+type Props = {
+  href?: string | undefined;
+  variant?: 'primary' | 'secondary' | 'quiet';
+  icon?: IconName | undefined;
+  arrow?: boolean;
+  type?: 'button' | 'submit';
+  size?: 'm' | 's';
+  class?: string;
+} & Omit<HTMLAttributes<'a'> & HTMLAttributes<'button'>, 'type' | 'href' | 'class'>;
+
+const {
+  href,
+  variant = 'primary',
+  icon,
+  arrow = false,
+  type = 'button',
+  size = 'm',
+  class: className,
+  ...rest
+} = Astro.props;
+const classes = ['button', `button--${variant}`, `button--${size}`, className];
+---
+
+{href ? (
+  <a href={href} class:list={classes} {...rest}>
+    {icon && <Icon name={icon} size={20} />}
+    <span>
+      <slot />
+    </span>
+    {arrow && <Icon name="arrow" size={18} class="button__arrow" />}
+  </a>
+) : (
+  <button type={type} class:list={classes} {...rest}>
+    {icon && <Icon name={icon} size={20} />}
+    <span>
+      <slot />
+    </span>
+    {arrow && <Icon name="arrow" size={18} class="button__arrow" />}
+  </button>
+)}
+
+<style>
+  @layer components {
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2xs);
+      min-block-size: var(--target);
+      padding-inline: var(--space-m);
+      border: 1px solid transparent;
+      border-radius: var(--radius-m);
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: var(--step-0);
+      line-height: 1.2;
+      text-decoration: none;
+      white-space: nowrap;
+      transition:
+        background-color var(--duration-s),
+        border-color var(--duration-s),
+        color var(--duration-s);
+    }
+
+    .button--s {
+      font-size: var(--step--1);
+      padding-inline: var(--space-s);
+    }
+
+    .button--primary {
+      background: var(--color-accent);
+      color: var(--color-on-accent);
+    }
+
+    .button--primary:hover {
+      background: color-mix(in srgb, var(--color-accent) 88%, var(--color-text));
+    }
+
+    .button--secondary {
+      border-color: var(--color-text);
+      color: var(--color-text);
+      background: transparent;
+    }
+
+    .button--secondary:hover {
+      background: var(--color-text);
+      color: var(--color-bg);
+    }
+
+    .button--quiet {
+      padding-inline: 0;
+      color: var(--color-text);
+      text-decoration: underline;
+      text-decoration-color: var(--color-line-strong);
+      text-underline-offset: 0.3em;
+    }
+
+    .button--quiet:hover {
+      text-decoration-color: var(--color-accent);
+    }
+
+    .button :global(.button__arrow) {
+      transition: translate var(--duration-s) var(--ease-out);
+    }
+
+    .button:hover :global(.button__arrow) {
+      translate: 3px 0;
+    }
+
+    :global([dir='rtl']) .button:hover :global(.button__arrow) {
+      translate: -3px 0;
+    }
+
+    .button[disabled],
+    .button[aria-disabled='true'] {
+      opacity: 0.6;
+      cursor: progress;
+    }
+  }
+</style>

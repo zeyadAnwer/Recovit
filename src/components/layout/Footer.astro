@@ -1,0 +1,398 @@
+---
+/**
+ * Footer — the site's only closing call to action (a dark band), then
+ * columns: services, company, resources, contact. The incident line comes
+ * first in contact. Only filled settings values are shown; social links only
+ * when set. Bilingual lockup on every page.
+ */
+import Icon from '../ui/Icon.astro';
+import Logo from '../ui/Logo.astro';
+import { filled, site } from '../../config';
+import { pick, routes, useI18n } from '../../i18n';
+import { formatPhone, mailHref, socialLinks, telHref, whatsappHref } from '../../lib/contact';
+import { getServices } from '../../lib/content';
+
+const { locale, t, path } = useI18n(Astro.currentLocale);
+const services = await getServices(locale);
+const emergency = telHref(site.phones.emergency);
+const main = telHref(site.phones.main);
+const whatsapp = whatsappHref(site.whatsapp);
+const address = filled(pick(site.address, locale));
+const hours = filled(pick(site.hours, locale));
+const mapUrl = filled(site.mapUrl);
+const socials = socialLinks(site.social);
+const owner = filled(site.legalName) ?? site.name;
+const year = new Date().getFullYear();
+
+const company = [
+  { label: t.nav.about, href: path(routes.about) },
+  { label: t.nav.process, href: path(routes.process) },
+  { label: t.nav.sectors, href: path(routes.sectors) },
+];
+const resources = [
+  { label: t.nav.faq, href: path(routes.faq) },
+  { label: t.nav.startCase, href: path(routes.startCase) },
+  { label: t.nav.contact, href: path(routes.contact) },
+];
+---
+
+<footer class="site-footer">
+  <section class="footer-band" aria-labelledby="footer-cta-title">
+    <div class="container container--wide footer-band__inner">
+      <div class="footer-band__text">
+        <h2 id="footer-cta-title">{t.footer.ctaTitle}</h2>
+        <p>{t.footer.ctaLead}</p>
+      </div>
+      <div class="footer-band__actions">
+        <a href={emergency ?? path(routes.startCase)} class="footer-band__call">
+          <Icon name="call" size={20} />
+          {emergency ? <bdi>{formatPhone(site.phones.emergency)}</bdi> : t.cta.startCase}
+        </a>
+        {emergency && (
+          <a href={path(routes.startCase)} class="footer-band__case">
+            {t.cta.startCase}
+            <Icon name="arrow" size={18} />
+          </a>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <div class="container container--wide site-footer__grid">
+    <div class="site-footer__brand">
+      <Logo variant="bilingual" />
+      <p>{t.footer.lead}</p>
+      {socials.length > 0 && (
+        <ul role="list" class="site-footer__social">
+          {socials.map((item) => (
+            <li>
+              <a
+                href={item.url}
+                rel="noopener me"
+                target="_blank"
+                aria-label={`${item.label} ${t.a11y.newTab}`}
+              >
+                <Icon name={item.network} size={20} />
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+
+    <nav aria-labelledby="footer-services">
+      <h2 id="footer-services" class="site-footer__title">
+        {t.footer.servicesTitle}
+      </h2>
+      <ul role="list" class="site-footer__links">
+        {services.map((service) => (
+          <li>
+            <a href={path(routes.service(service.slug))}>{service.entry.data.title}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <nav aria-labelledby="footer-company">
+      <h2 id="footer-company" class="site-footer__title">
+        {t.footer.companyTitle}
+      </h2>
+      <ul role="list" class="site-footer__links">
+        {company.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <nav aria-labelledby="footer-resources">
+      <h2 id="footer-resources" class="site-footer__title">
+        {t.footer.resourcesTitle}
+      </h2>
+      <ul role="list" class="site-footer__links">
+        {resources.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <section aria-labelledby="footer-contact" class="site-footer__contact">
+      <h2 id="footer-contact" class="site-footer__title">
+        {t.footer.contactTitle}
+      </h2>
+      <dl>
+        {emergency && (
+          <div class="site-footer__emergency">
+            <dt>
+              {t.common.emergency} · {t.common.available247}
+            </dt>
+            <dd>
+              <a href={emergency}>
+                <bdi>{formatPhone(site.phones.emergency)}</bdi>
+              </a>
+            </dd>
+          </div>
+        )}
+        {main && (
+          <div>
+            <dt>{t.common.phone}</dt>
+            <dd>
+              <a href={main}>
+                <bdi>{formatPhone(site.phones.main)}</bdi>
+              </a>
+            </dd>
+          </div>
+        )}
+        {whatsapp && (
+          <div>
+            <dt>{t.common.whatsapp}</dt>
+            <dd>
+              <a href={whatsapp} rel="noopener" target="_blank">
+                <bdi>{formatPhone(site.whatsapp)}</bdi>
+                <span class="visually-hidden">{t.a11y.newTab}</span>
+              </a>
+            </dd>
+          </div>
+        )}
+        <div>
+          <dt>{t.common.email}</dt>
+          <dd>
+            <a href={mailHref(site.emails.info)}>
+              <bdi>{site.emails.info}</bdi>
+            </a>
+          </dd>
+        </div>
+        {hours && (
+          <div>
+            <dt>{t.common.hours}</dt>
+            <dd>{hours}</dd>
+          </div>
+        )}
+        {address && (
+          <div>
+            <dt>{t.common.address}</dt>
+            <dd>
+              {mapUrl ? (
+                <a href={mapUrl} rel="noopener" target="_blank">
+                  {address}
+                  <span class="visually-hidden">{t.a11y.newTab}</span>
+                </a>
+              ) : (
+                address
+              )}
+            </dd>
+          </div>
+        )}
+      </dl>
+    </section>
+  </div>
+
+  <div class="container container--wide site-footer__base">
+    <p>
+      © {year} {owner}. {t.footer.rights}
+    </p>
+    <ul role="list">
+      <li>
+        <a href={path(routes.privacy)}>{t.footer.privacy}</a>
+      </li>
+      <li>
+        <a href={path(routes.terms)}>{t.footer.terms}</a>
+      </li>
+      <li>
+        <a href="/.well-known/security.txt">{t.footer.security}</a>
+      </li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  @layer components {
+    .site-footer {
+      margin-block-start: var(--space-3xl);
+      background: var(--color-surface);
+      border-block-start: var(--rule);
+      font-size: var(--step--1);
+    }
+
+    /* Closing band */
+    .footer-band {
+      background: var(--color-band);
+      color: var(--color-band-text);
+    }
+
+    .footer-band__inner {
+      display: grid;
+      gap: var(--space-l);
+      padding-block: var(--space-2xl);
+      align-items: center;
+    }
+
+    @media (width >= 60rem) {
+      .footer-band__inner {
+        grid-template-columns: 1fr auto;
+      }
+    }
+
+    .footer-band__text {
+      display: grid;
+      gap: var(--space-xs);
+    }
+
+    .footer-band h2 {
+      font-size: var(--step-4);
+    }
+
+    .footer-band p {
+      font-size: var(--step-1);
+      color: var(--color-band-muted);
+    }
+
+    .footer-band__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+    }
+
+    .footer-band__call,
+    .footer-band__case {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2xs);
+      min-block-size: 3.25rem;
+      padding-inline: var(--space-m);
+      border-radius: var(--radius-pill);
+      font-size: var(--step-0);
+      font-weight: 650;
+      text-decoration: none;
+    }
+
+    .footer-band__call {
+      background: var(--color-alert);
+      color: var(--color-on-alert);
+    }
+
+    .footer-band__case {
+      border: 1px solid var(--color-band-line);
+      color: var(--color-band-text);
+    }
+
+    .footer-band__case:hover {
+      border-color: var(--color-band-text);
+    }
+
+    /* Columns */
+    .site-footer__grid {
+      display: grid;
+      gap: var(--space-xl) var(--space-l);
+      padding-block: var(--space-2xl) var(--space-xl);
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    }
+
+    @media (width >= 72rem) {
+      .site-footer__grid {
+        grid-template-columns: 1.6fr 1.3fr 0.8fr 0.8fr 1.4fr;
+      }
+    }
+
+    .site-footer__brand {
+      display: grid;
+      gap: var(--space-s);
+      align-content: start;
+      color: var(--color-muted);
+    }
+
+    .site-footer__title {
+      margin-block-end: var(--space-s);
+      font-family: var(--font-body);
+      font-size: var(--step--1);
+      font-weight: 650;
+      letter-spacing: var(--tracking-label);
+      text-transform: uppercase;
+      color: var(--color-text);
+    }
+
+    :global(:lang(ar)) .site-footer__title {
+      text-transform: none;
+    }
+
+    .site-footer__links {
+      display: grid;
+      margin: 0;
+    }
+
+    .site-footer__links a,
+    .site-footer__base a {
+      display: inline-flex;
+      align-items: center;
+      min-block-size: var(--target);
+      color: var(--color-muted);
+      text-decoration: none;
+    }
+
+    .site-footer__links a:hover,
+    .site-footer__base a:hover,
+    .site-footer__contact a:hover {
+      color: var(--color-text);
+      text-decoration: underline;
+    }
+
+    .site-footer__contact dl {
+      display: grid;
+      gap: var(--space-s);
+    }
+
+    .site-footer__contact dt {
+      color: var(--color-muted);
+    }
+
+    .site-footer__contact dd a {
+      display: inline-flex;
+      min-block-size: var(--target);
+      align-items: center;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .site-footer__emergency dd a {
+      font-family: var(--font-heading);
+      font-size: var(--step-2);
+      color: var(--color-alert);
+    }
+
+    .site-footer__social {
+      display: flex;
+      gap: var(--space-2xs);
+    }
+
+    .site-footer__social a {
+      display: grid;
+      place-items: center;
+      inline-size: var(--target);
+      block-size: var(--target);
+      border: var(--rule);
+      border-radius: var(--radius-pill);
+      color: var(--color-text);
+    }
+
+    .site-footer__base {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-2xs) var(--space-m);
+      padding-block: var(--space-s);
+      border-block-start: var(--rule);
+      color: var(--color-muted);
+    }
+
+    .site-footer__base ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-m);
+      margin: 0;
+    }
+  }
+</style>
